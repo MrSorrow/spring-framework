@@ -80,6 +80,8 @@ public class XmlValidationModeDetector {
 
 
 	/**
+	 * 真正实现检测XML资源文件的验证模式
+	 * 通过查看xml文件是否含有'DOCTYPE'判断是否是DTD模式
 	 * Detect the validation mode for the XML document in the supplied {@link InputStream}.
 	 * Note that the supplied {@link InputStream} is closed by this method before returning.
 	 * @param inputStream the InputStream to parse
@@ -95,6 +97,7 @@ public class XmlValidationModeDetector {
 			String content;
 			while ((content = reader.readLine()) != null) {
 				content = consumeCommentTokens(content);
+				// 处理xml注释，如果是空行或注释则略过
 				if (this.inComment || !StringUtils.hasText(content)) {
 					continue;
 				}
@@ -102,6 +105,8 @@ public class XmlValidationModeDetector {
 					isDtdValidated = true;
 					break;
 				}
+				// 检测一行是否拥有开始标签，例如<beans>, <bean>...DTD则是<?DOCTYPE>, 区别在于<后的是否是字母
+				// 如果已经检测到是正式定义<beans>说明验证模式已经确定，无需继续读下去进行判断
 				if (hasOpeningTag(content)) {
 					// End of meaningful data...
 					break;
@@ -121,6 +126,7 @@ public class XmlValidationModeDetector {
 
 
 	/**
+	 * 检测是否包含DTD的'DOCTYPE'
 	 * Does the content contain the DTD DOCTYPE declaration?
 	 */
 	private boolean hasDoctype(String content) {
@@ -128,6 +134,7 @@ public class XmlValidationModeDetector {
 	}
 
 	/**
+	 * 检测行中是否包含开始标签
 	 * Does the supplied content contain an XML opening tag. If the parse state is currently
 	 * in an XML comment then this method always returns false. It is expected that all comment
 	 * tokens will have consumed for the supplied content before passing the remainder to this method.

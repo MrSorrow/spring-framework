@@ -27,6 +27,7 @@ import java.nio.channels.ReadableByteChannel;
 import org.springframework.lang.Nullable;
 
 /**
+ * 该接口抽象了所以Spring内部使用的底层资源：File、URL、Classpath...
  * Interface for a resource descriptor that abstracts from the actual
  * type of underlying resource, such as a file or class path resource.
  *
@@ -52,6 +53,7 @@ import org.springframework.lang.Nullable;
 public interface Resource extends InputStreamSource {
 
 	/**
+	 * 判断是否存在
 	 * Determine whether this resource actually exists in physical form.
 	 * <p>This method performs a definitive existence check, whereas the
 	 * existence of a {@code Resource} handle only guarantees a valid
@@ -60,6 +62,7 @@ public interface Resource extends InputStreamSource {
 	boolean exists();
 
 	/**
+	 * 判断是否可读
 	 * Indicate whether non-empty contents of this resource can be read via
 	 * {@link #getInputStream()}.
 	 * <p>Will be {@code true} for typical resource descriptors that exist
@@ -75,6 +78,7 @@ public interface Resource extends InputStreamSource {
 	}
 
 	/**
+	 * 判断是否处于打开状态
 	 * Indicate whether this resource represents a handle with an open stream.
 	 * If {@code true}, the InputStream cannot be read multiple times,
 	 * and must be read and closed to avoid resource leaks.
@@ -85,6 +89,7 @@ public interface Resource extends InputStreamSource {
 	}
 
 	/**
+	 * 判断是否是一个文件
 	 * Determine whether this resource represents a file in a file system.
 	 * A value of {@code true} strongly suggests (but does not guarantee)
 	 * that a {@link #getFile()} call will succeed.
@@ -143,6 +148,7 @@ public interface Resource extends InputStreamSource {
 	long contentLength() throws IOException;
 
 	/**
+	 * 获取最近修改时间戳
 	 * Determine the last-modified timestamp for this resource.
 	 * @throws IOException if the resource cannot be resolved
 	 * (in the file system or as some other known physical resource type)
@@ -150,6 +156,7 @@ public interface Resource extends InputStreamSource {
 	long lastModified() throws IOException;
 
 	/**
+	 * 基于当前资源创建一个相对资源
 	 * Create a resource relative to this resource.
 	 * @param relativePath the relative path (relative to this resource)
 	 * @return the resource handle for the relative resource
@@ -167,6 +174,7 @@ public interface Resource extends InputStreamSource {
 	String getFilename();
 
 	/**
+	 * 用于在错误处理中详细的打印出错的资源文件信息
 	 * Return a description for this resource,
 	 * to be used for error output when working with the resource.
 	 * <p>Implementations are also encouraged to return this value

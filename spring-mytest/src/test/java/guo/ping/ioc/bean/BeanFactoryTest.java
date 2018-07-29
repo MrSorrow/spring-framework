@@ -16,7 +16,8 @@ public class BeanFactoryTest {
 
 	@Test
 	public void testSimpleLoad() {
-		BeanFactory beanFactory = new XmlBeanFactory(new ClassPathResource("beanFactoryTest.xml"));
+		ClassPathResource resource = new ClassPathResource("beanFactoryTest.xml");
+		BeanFactory beanFactory = new XmlBeanFactory(resource);
 		MyTestBean myTestBean = (MyTestBean) beanFactory.getBean("myTestBean");
 		System.out.println(myTestBean.getTestStr());
 	}

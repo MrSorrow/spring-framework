@@ -28,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
+ * 专业对于classpath下的资源文件进行封装
  * {@link Resource} implementation for class path resources. Uses either a
  * given {@link ClassLoader} or a given {@link Class} for loading resources.
  *
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @see Class#getResourceAsStream(String)
  */
 public class ClassPathResource extends AbstractFileResolvingResource {
+
 
 	private final String path;
 
@@ -77,6 +79,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	 */
 	public ClassPathResource(String path, @Nullable ClassLoader classLoader) {
 		Assert.notNull(path, "Path must not be null");
+		// 对path进行字符串处理
 		String pathToUse = StringUtils.cleanPath(path);
 		if (pathToUse.startsWith("/")) {
 			pathToUse = pathToUse.substring(1);
@@ -160,6 +163,8 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	}
 
 	/**
+	 * 实现InputStreamSource接口的方法
+	 * 通过class或者classLoader提供的底层方法进行调用
 	 * This implementation opens an InputStream for the given class path resource.
 	 * @see java.lang.ClassLoader#getResourceAsStream(String)
 	 * @see java.lang.Class#getResourceAsStream(String)

@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * 用于对资源文件resource编码处理
  * Holder that combines a {@link Resource} descriptor with a specific encoding
  * or {@code Charset} to be used for reading from the resource.
  *
@@ -128,6 +129,7 @@ public class EncodedResource implements InputStreamSource {
 	}
 
 	/**
+	 * 当设置了编码属性时Spring会使用相应的编码作为输入流的编码
 	 * Open a {@code java.io.Reader} for the specified resource, using the specified
 	 * {@link #getCharset() Charset} or {@linkplain #getEncoding() encoding}
 	 * (if any).

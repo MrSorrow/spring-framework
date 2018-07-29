@@ -42,6 +42,7 @@ import java.util.Set;
 import org.springframework.lang.Nullable;
 
 /**
+ * 关于各种class相关的实用方法
  * Miscellaneous class utility methods.
  * Mainly for internal use within the framework.
  *
@@ -112,6 +113,7 @@ public abstract class ClassUtils {
 
 
 	static {
+		// java 八种基本数据类型
 		primitiveWrapperTypeMap.put(Boolean.class, boolean.class);
 		primitiveWrapperTypeMap.put(Byte.class, byte.class);
 		primitiveWrapperTypeMap.put(Character.class, char.class);
@@ -161,6 +163,8 @@ public abstract class ClassUtils {
 	}
 
 	/**
+	 * 获取默认的ClassLoader，
+	 * 顺序：Thread.currentThread().getContextClassLoader()>ClassUtils.class.getClassLoader()>ClassLoader.getSystemClassLoader()
 	 * Return the default ClassLoader to use: typically the thread context
 	 * ClassLoader, if available; the ClassLoader that loaded the ClassUtils
 	 * class will be used as fallback.
@@ -220,6 +224,7 @@ public abstract class ClassUtils {
 	}
 
 	/**
+	 * Class.forName()的进化版，返回类的实例对象
 	 * Replacement for {@code Class.forName()} that also returns Class instances
 	 * for primitives (e.g. "int") and array class names (e.g. "String[]").
 	 * Furthermore, it is also capable of resolving inner class names in Java source
@@ -237,6 +242,7 @@ public abstract class ClassUtils {
 
 		Assert.notNull(name, "Name must not be null");
 
+		// 判断是否作为原始类进行解析
 		Class<?> clazz = resolvePrimitiveClassName(name);
 		if (clazz == null) {
 			clazz = commonClassCache.get(name);
@@ -266,6 +272,7 @@ public abstract class ClassUtils {
 			return Array.newInstance(elementClass, 0).getClass();
 		}
 
+		// TODO:为什么不直接利用classLoader实例进行判断操作，而需要重新创建一个引用?
 		ClassLoader clToUse = classLoader;
 		if (clToUse == null) {
 			clToUse = getDefaultClassLoader();
@@ -276,6 +283,7 @@ public abstract class ClassUtils {
 		catch (ClassNotFoundException ex) {
 			int lastDotIndex = name.lastIndexOf(PACKAGE_SEPARATOR);
 			if (lastDotIndex != -1) {
+				// java.lang$Provider
 				String innerClassName =
 						name.substring(0, lastDotIndex) + INNER_CLASS_SEPARATOR + name.substring(lastDotIndex + 1);
 				try {
@@ -438,6 +446,7 @@ public abstract class ClassUtils {
 	}
 
 	/**
+	 * 根据jvm对原始类的命名规则以原始类型解析
 	 * Resolve the given class name as primitive class, if appropriate,
 	 * according to the JVM's naming rules for primitive classes.
 	 * <p>Also supports the JVM's internal class names for primitive arrays.

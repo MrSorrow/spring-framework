@@ -62,6 +62,7 @@ public class DefaultDocumentLoader implements DocumentLoader {
 
 
 	/**
+	 * 根据包含Xml资源的InputSource获取Document
 	 * Load the {@link Document} at the supplied {@link InputSource} using the standard JAXP-configured
 	 * XML parser.
 	 */
@@ -114,6 +115,7 @@ public class DefaultDocumentLoader implements DocumentLoader {
 	}
 
 	/**
+	 * 利用 DocumentBuilderFactory 创建 DocumentBuilder
 	 * Create a JAXP DocumentBuilder that this bean definition reader
 	 * will use for parsing XML documents. Can be overridden in subclasses,
 	 * adding further initialization of the builder.

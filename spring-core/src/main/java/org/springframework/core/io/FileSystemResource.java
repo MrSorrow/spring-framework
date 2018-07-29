@@ -148,6 +148,7 @@ public class FileSystemResource extends AbstractResource implements WritableReso
 	}
 
 	/**
+	 * 实现InputStreamSource接口的方法
 	 * This implementation opens a NIO file stream for the underlying file.
 	 * @see java.io.FileInputStream
 	 */
