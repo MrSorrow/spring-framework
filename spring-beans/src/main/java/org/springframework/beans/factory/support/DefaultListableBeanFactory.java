@@ -786,6 +786,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of BeanDefinitionRegistry interface
 	//---------------------------------------------------------------------
 
+	/**
+	 * 通过beanName注册BeanDefinition
+	 * @param beanName the name of the bean instance to register
+	 * @param beanDefinition definition of the bean instance to register
+	 * @throws BeanDefinitionStoreException
+	 */
 	@Override
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
@@ -795,6 +801,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
+				// 注册前的最后一次校验，这里的校验不同于之前的XML文件校验
+				// 主要是对于AbstractBeanDefinition属性中的methodOverrides校验
+				// 校验methodOverrides是否与工厂方法并存或者methodOverrides对应的方法根本不存在
 				((AbstractBeanDefinition) beanDefinition).validate();
 			}
 			catch (BeanDefinitionValidationException ex) {
@@ -803,8 +812,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// 从beanDefinitionMap获取beanName的beanDefinition
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		// 如果存在
 		if (existingDefinition != null) {
+			// 如果beanName对应的beanDefinition不允许被覆盖，则抛出异常
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
@@ -830,17 +842,24 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 更新beanName的beanDefinition
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
+		// 如果不存在
 		else {
+			// 工厂的bean创建阶段是否已经开始
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
+				// 因为beanDefinitionMap是全局变量，这里肯定会存在并发访问的情况
 				synchronized (this.beanDefinitionMap) {
+					// beanDefinitionMap中添加beanDefinition
 					this.beanDefinitionMap.put(beanName, beanDefinition);
+					// 将beanName添加至beanDefinitionNames中
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
 					updatedDefinitions.addAll(this.beanDefinitionNames);
 					updatedDefinitions.add(beanName);
 					this.beanDefinitionNames = updatedDefinitions;
+					// 如果手动注册的单例的名称的list集合中包含beanName，就移除
 					if (this.manualSingletonNames.contains(beanName)) {
 						Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
 						updatedSingletons.remove(beanName);
@@ -848,16 +867,20 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 			}
+			// 仍然处于启动注册阶段
 			else {
-				// Still in startup registration phase
+				// 注册beanDefinition
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				// 记录beanName
 				this.beanDefinitionNames.add(beanName);
+				// 手动注册的单例的名称的list集合移除beanName
 				this.manualSingletonNames.remove(beanName);
 			}
 			this.frozenBeanDefinitionNames = null;
 		}
 
 		if (existingDefinition != null || containsSingleton(beanName)) {
+			// 重置所有beanName对应的缓存
 			resetBeanDefinition(beanName);
 		}
 	}

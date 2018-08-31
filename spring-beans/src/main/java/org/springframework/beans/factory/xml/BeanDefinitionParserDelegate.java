@@ -415,7 +415,7 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
-		// 获取id和name属性值
+		// 1、获取id和name属性值
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
@@ -439,14 +439,14 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		if (containingBean == null) {
-			// 检查是否重复
+			// 检验bean是否已经被用，没有重复则保存bean的名称与别名
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
-		// 进一步解析其他所有属性
+		// 2、进一步解析其他所有属性
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
-			// 如果id和name属性都没有指定，则Spring会自行创建beanName以及指定别名
+			// 3、如果id和name属性都没有指定，则Spring会自行创建beanName以及指定别名
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {
@@ -476,7 +476,7 @@ public class BeanDefinitionParserDelegate {
 				}
 			}
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
-			// 将解析完成的信息封装至BeanDefinitionHolder实例中
+			// 4、将解析完成的信息封装至BeanDefinitionHolder实例中
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
 
@@ -974,6 +974,7 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public Object parsePropertyValue(Element ele, BeanDefinition bd, @Nullable String propertyName) {
+		// 如果propertyName不为空则是解析<property>，否则是<constructor-arg>
 		String elementName = (propertyName != null ?
 				"<property> element for property '" + propertyName + "'" :
 				"<constructor-arg> element");
@@ -1461,6 +1462,12 @@ public class BeanDefinitionParserDelegate {
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 
+	/**
+	 * 解析bean标签的自定义属性
+	 * @param ele bean标签元素
+	 * @param definitionHolder 保存属性信息的BeanDefinition
+	 * @return
+	 */
 	public BeanDefinitionHolder decorateBeanDefinitionIfRequired(Element ele, BeanDefinitionHolder definitionHolder) {
 		return decorateBeanDefinitionIfRequired(ele, definitionHolder, null);
 	}
@@ -1470,14 +1477,14 @@ public class BeanDefinitionParserDelegate {
 
 		BeanDefinitionHolder finalDefinition = definitionHolder;
 
-		// Decorate based on custom attributes first.
+		// 遍历所有属性，解析默认标签下的自定义属性
 		NamedNodeMap attributes = ele.getAttributes();
 		for (int i = 0; i < attributes.getLength(); i++) {
 			Node node = attributes.item(i);
 			finalDefinition = decorateIfRequired(node, finalDefinition, containingBd);
 		}
 
-		// Decorate based on custom nested elements.
+		// 遍历所有子节点，解析默认标签下的自定义子元素
 		NodeList children = ele.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node node = children.item(i);
@@ -1488,13 +1495,24 @@ public class BeanDefinitionParserDelegate {
 		return finalDefinition;
 	}
 
+	/**
+	 * 解析bean标签的自定义属性
+	 * @param node 自定义属性或者子元素的节点
+	 * @param originalDef 已经包含解析完默认标签默认属性子元素信息的BeanDefinitionHolder对象
+	 * @param containingBd 父类beanDefinition
+	 * @return
+	 */
 	public BeanDefinitionHolder decorateIfRequired(
 			Node node, BeanDefinitionHolder originalDef, @Nullable BeanDefinition containingBd) {
 
+		// 获取自定义标签的命名空间
 		String namespaceUri = getNamespaceURI(node);
+		// 如果属于自定义标签则进行decorate
 		if (namespaceUri != null && !isDefaultNamespace(namespaceUri)) {
+			// 根据命名空间寻找对应的处理器handler
 			NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 			if (handler != null) {
+				// 利用处理器进行修饰
 				BeanDefinitionHolder decorated =
 						handler.decorate(node, originalDef, new ParserContext(this.readerContext, this, containingBd));
 				if (decorated != null) {
