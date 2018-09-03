@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://www.wangguoping.club/schema/custom"
+		xmlns:tns="http://www.wangguoping.club/schema/custom"
+		elementFormDefault="qualified">
+	<element name="user">
+		<complexType>
+			<attribute name="id" type="string" />
+			<attribute name="userName" type="string" />
+			<attribute name="email" type="string" />
+		</complexType>
+	</element>
+	<element name="order">
+		<complexType>
+			<attribute name="id" type="string" />
+			<attribute name="orderId" type="string" />
+			<attribute name="item" type="string" />
+		</complexType>
+	</element>
+</schema>

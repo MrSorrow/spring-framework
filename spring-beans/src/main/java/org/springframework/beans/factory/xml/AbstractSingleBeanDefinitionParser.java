@@ -48,6 +48,7 @@ import org.springframework.lang.Nullable;
 public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDefinitionParser {
 
 	/**
+	 * 解析自定义标签内容
 	 * Creates a {@link BeanDefinitionBuilder} instance for the
 	 * {@link #getBeanClass bean Class} and passes it to the
 	 * {@link #doParse} strategy method.
@@ -59,17 +60,19 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	 * @see #doParse
 	 */
 	@Override
-	protected final AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
+	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 		String parentName = getParentName(element);
 		if (parentName != null) {
 			builder.getRawBeanDefinition().setParentName(parentName);
 		}
+		// 获取自定义标签中的class，此时会调用自定义解析器如UserBeanDefinitionParser中的getBeanClass方法
 		Class<?> beanClass = getBeanClass(element);
 		if (beanClass != null) {
 			builder.getRawBeanDefinition().setBeanClass(beanClass);
 		}
 		else {
+			// 如果子类没有重写getBeanClass，则检查是否重写了getBeanClassName
 			String beanClassName = getBeanClassName(element);
 			if (beanClassName != null) {
 				builder.getRawBeanDefinition().setBeanClassName(beanClassName);
@@ -79,12 +82,15 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 		BeanDefinition containingBd = parserContext.getContainingBeanDefinition();
 		if (containingBd != null) {
 			// Inner bean definition must receive same scope as containing bean.
+			// 若存在父类则使用父类的scope属性
 			builder.setScope(containingBd.getScope());
 		}
 		if (parserContext.isDefaultLazyInit()) {
 			// Default-lazy-init applies to custom bean definitions as well.
+			// 配置延迟加载
 			builder.setLazyInit(true);
 		}
+		// 调用子类重写的doParse方法进行解析
 		doParse(element, parserContext, builder);
 		return builder.getBeanDefinition();
 	}
@@ -133,6 +139,7 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	}
 
 	/**
+	 * 自定义解析器解析方法，需要子类重写
 	 * Parse the supplied {@link Element} and populate the supplied
 	 * {@link BeanDefinitionBuilder} as required.
 	 * <p>The default implementation delegates to the {@code doParse}
@@ -147,6 +154,7 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	}
 
 	/**
+	 * 自定义解析器解析方法，需要子类重写
 	 * Parse the supplied {@link Element} and populate the supplied
 	 * {@link BeanDefinitionBuilder} as required.
 	 * <p>The default implementation does nothing.

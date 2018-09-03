@@ -159,6 +159,7 @@ public abstract class PropertiesLoaderUtils {
 	}
 
 	/**
+	 * 读取所有Properties属性
 	 * Load all properties from the specified class path resource
 	 * (in ISO-8859-1 encoding), using the given class loader.
 	 * <p>Merges properties if more than one resource of the same name

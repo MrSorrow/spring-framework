@@ -174,7 +174,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	}
 
 	/**
-	 * 解析注册每一个<bean>...</bean>，默认的或者自定义的如：<tx: .../>
+	 * 解析注册每一个<beans>...</beans>，默认的或者自定义的如：<tx: .../>
 	 * Parse the elements at the root level in the document:
 	 * "import", "alias", "bean".
 	 * @param root the DOM root element of the document
@@ -190,16 +190,18 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 					Element ele = (Element) node;
 					// 判断是否是自定义bean声明
 					if (delegate.isDefaultNamespace(ele)) {
-						// 对bean的处理
+						// 对bean默认标签的处理
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						// 处理自定义标签 被<beans>包裹
 						delegate.parseCustomElement(ele);
 					}
 				}
 			}
 		}
 		else {
+			// 处理自定义标签 <beans>级别
 			delegate.parseCustomElement(root);
 		}
 	}

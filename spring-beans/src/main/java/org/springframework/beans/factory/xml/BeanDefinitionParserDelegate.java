@@ -1443,22 +1443,36 @@ public class BeanDefinitionParserDelegate {
 		return TRUE_VALUE.equals(value);
 	}
 
+	/**
+	 * 解析处理自定义标签
+	 * @param ele
+	 * @return
+	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele) {
 		return parseCustomElement(ele, null);
 	}
 
+	/**
+	 * 解析处理自定义标签
+	 * @param ele
+	 * @param containingBd 父类bean，对顶层元素的解析应设置为null
+	 * @return
+	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		// 获取自定义标签的命名空间
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
 		}
+		// 根据命名空间查找对应的NameSpaceHandler
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		// 调用NameSpaceHandler的进行解析
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 
@@ -1551,7 +1565,7 @@ public class BeanDefinitionParserDelegate {
 
 
 	/**
-	 * 获取命名空间
+	 * 获取node的命名空间
 	 * Get the namespace URI for the supplied node.
 	 * <p>The default implementation uses {@link Node#getNamespaceURI}.
 	 * Subclasses may override the default implementation to provide a
