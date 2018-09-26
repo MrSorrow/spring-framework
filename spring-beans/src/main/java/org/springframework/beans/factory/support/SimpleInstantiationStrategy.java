@@ -57,9 +57,19 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	}
 
 
+	/**
+	 * 无参实例化策略
+	 * @param bd the bean definition
+	 * @param beanName the name of the bean when it's created in this context.
+	 * The name can be {@code null} if we're autowiring a bean which doesn't
+	 * belong to the factory.
+	 * @param owner the owning BeanFactory
+	 * @return
+	 */
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
-		// Don't override the class with CGLIB if no overrides.
+		// 如果有需要覆盖或者动态替换的方法当然需要使用cglib进行动态代理，因为可以在创建代理的同时将动态方法织入类中
+		// 但是如果没有需要动态改变的方法，为了方便直接反射就可以了
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
@@ -102,10 +112,23 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 		throw new UnsupportedOperationException("Method Injection not supported in SimpleInstantiationStrategy");
 	}
 
+	/**
+	 * 有参实例化策略
+	 * @param bd the bean definition
+	 * @param beanName the name of the bean when it's created in this context.
+	 * The name can be {@code null} if we're autowiring a bean which doesn't
+	 * belong to the factory.
+	 * @param owner the owning BeanFactory
+	 * @param ctor the constructor to use
+	 * @param args the constructor arguments to apply
+	 * @return
+	 */
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner,
 			final Constructor<?> ctor, @Nullable Object... args) {
 
+		// 如果有需要覆盖或者动态替换的方法当然需要使用cglib进行动态代理，因为可以在创建代理的同时将动态方法织入类中
+		// 但是如果没有需要动态改变的方法，为了方便直接反射就可以了
 		if (!bd.hasMethodOverrides()) {
 			if (System.getSecurityManager() != null) {
 				// use own privileged to change accessibility (when security is on)

@@ -1,5 +1,6 @@
 package guo.ping.ioc.bean;
 
+import guo.ping.ioc.loadbean.Car;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
@@ -19,6 +20,8 @@ public class BeanFactoryTest {
 		ClassPathResource resource = new ClassPathResource("beanFactoryTest.xml");
 		BeanFactory beanFactory = new XmlBeanFactory(resource);
 		MyTestBean myTestBean = (MyTestBean) beanFactory.getBean("myTestBean");
+		Car car = (Car) beanFactory.getBean("testCarFactoryBean");
 		System.out.println(myTestBean.getTestStr());
+		System.out.println(car);
 	}
 }

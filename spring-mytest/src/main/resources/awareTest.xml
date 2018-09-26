@@ -2,12 +2,6 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<bean id="myTestBean" class="guo.ping.ioc.bean.MyTestBean">
-		<property name="testStr" value="haha" />
-	</bean>
-
-	<bean id="testCarFactoryBean" class="guo.ping.ioc.loadbean.CarFactoryBean">
-		<property name="carInfo" value="超跑,400,200000" />
-	</bean>
+	<bean id="hello" class="guo.ping.ioc.aware.Hello" />
+	<bean id="beanFactory" class="guo.ping.ioc.aware.TestAware" />
 </beans>

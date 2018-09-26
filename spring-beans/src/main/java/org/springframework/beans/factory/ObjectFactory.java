@@ -30,6 +30,7 @@ import org.springframework.beans.BeansException;
  * {@link BeanFactory}, while implementations of this class are normally meant
  * to be fed as an API to other beans (through injection). As such, the
  * {@code getObject()} method has different exception handling behavior.
+ * <a>https://blog.csdn.net/m0_38043362/article/details/80284577</a>
  *
  * @author Colin Sampaleanu
  * @since 1.0.2
