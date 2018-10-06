@@ -65,6 +65,7 @@ public abstract class BeanDefinitionReaderUtils {
 		if (className != null) {
 			if (classLoader != null) {
 				// 如果classLoader不为空，则使用以传入的classLoader同一虚拟机加载类对象，否则只是记录className
+				// 正因如此，后面才会有专门的从className解析出class(resolveClass)
 				bd.setBeanClass(ClassUtils.forName(className, classLoader));
 			}
 			else {

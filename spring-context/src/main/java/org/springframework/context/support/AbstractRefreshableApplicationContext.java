@@ -116,6 +116,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 
 	/**
+	 * 初始化BeanFactory，并进行XML文件读取，将得到的BeanFactory记录在当前实体的属性中
 	 * This implementation performs an actual refresh of this context's underlying
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
@@ -127,10 +128,16 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			closeBeanFactory();
 		}
 		try {
+			// 创建DefaultListableBeanFactory，就是XmlBeanFactory继承的
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			// 为了序列化指定id，如果需要的话，让这个BeanFactory从id反序列化到BeanFactory对象
 			beanFactory.setSerializationId(getId());
+			// 定制beanFactory，设置相关属性，包括允许覆盖同名称的不同定义的对象、循环依赖
+			// 可以被子类重新实现设置DefaultListableBeanFactory的任何配置
 			customizeBeanFactory(beanFactory);
+			// 初始化DocumentReader，并进行XML文件的读取和解析
 			loadBeanDefinitions(beanFactory);
+			// 使用全局变量记录BeanFactory类实例
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}
@@ -208,6 +215,8 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	}
 
 	/**
+	 * 扩展beanFactory，添加相关属性，包括允许覆盖同名称的不同定义的对象、循环依赖
+	 * 可以被子类重新实现设置DefaultListableBeanFactory的任何配置
 	 * Customize the internal bean factory used by this context.
 	 * Called for each {@link #refresh()} attempt.
 	 * <p>The default implementation applies this context's

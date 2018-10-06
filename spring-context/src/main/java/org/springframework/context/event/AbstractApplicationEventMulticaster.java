@@ -115,6 +115,10 @@ public abstract class AbstractApplicationEventMulticaster
 		}
 	}
 
+	/**
+	 * 注册监听器进入广播器
+	 * @param listenerBeanName the name of the listener bean to add
+	 */
 	@Override
 	public void addApplicationListenerBean(String listenerBeanName) {
 		synchronized (this.retrievalMutex) {
@@ -161,6 +165,7 @@ public abstract class AbstractApplicationEventMulticaster
 	}
 
 	/**
+	 * 获得与对应事件类型匹配的监听器
 	 * Return a Collection of ApplicationListeners matching the given
 	 * event type. Non-matching listeners get excluded early.
 	 * @param event the event to be propagated. Allows for excluding

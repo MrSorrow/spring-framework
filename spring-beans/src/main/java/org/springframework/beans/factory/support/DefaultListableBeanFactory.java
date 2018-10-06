@@ -194,6 +194,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 
 	/**
+	 * 为beanFactory设置序列化id
 	 * Specify an id for serialization purposes, allowing this BeanFactory to be
 	 * deserialized from this id back into the BeanFactory object, if needed.
 	 */
@@ -598,6 +599,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of ConfigurableListableBeanFactory interface
 	//---------------------------------------------------------------------
 
+	/**
+	 * 设置自动装配的特殊规则
+	 * @param dependencyType the dependency type to register. This will typically
+	 * be a base interface such as BeanFactory, with extensions of it resolved
+	 * as well if declared as an autowiring dependency (e.g. ListableBeanFactory),
+	 * as long as the given value actually implements the extended interface.
+	 * @param autowiredValue the corresponding autowired value. This may also be an
+	 * implementation of the {@link org.springframework.beans.factory.ObjectFactory}
+	 */
 	@Override
 	public void registerResolvableDependency(Class<?> dependencyType, @Nullable Object autowiredValue) {
 		Assert.notNull(dependencyType, "Dependency type must not be null");
@@ -724,6 +734,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return (this.configurationFrozen || super.isBeanEligibleForMetadataCaching(beanName));
 	}
 
+	/**
+	 * ApplicationContext实现的默认行为一启动就将所有的单例bean提前进行实例化
+	 * @throws BeansException
+	 */
 	@Override
 	public void preInstantiateSingletons() throws BeansException {
 		if (logger.isDebugEnabled()) {
@@ -737,6 +751,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			// bean非抽象且单例非惰性的全部预先加载
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
 				if (isFactoryBean(beanName)) {
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
@@ -947,6 +962,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return isAllowBeanDefinitionOverriding();
 	}
 
+	/**
+	 * 注册单例对象进入容器
+	 * @param beanName the name of the bean
+	 * @param singletonObject the existing singleton object
+	 * @throws IllegalStateException
+	 */
 	@Override
 	public void registerSingleton(String beanName, Object singletonObject) throws IllegalStateException {
 		super.registerSingleton(beanName, singletonObject);

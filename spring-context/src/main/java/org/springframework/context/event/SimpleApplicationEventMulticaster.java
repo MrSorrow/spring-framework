@@ -127,6 +127,11 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		multicastEvent(event, resolveDefaultEventType(event));
 	}
 
+	/**
+	 * 当Spring产生事件时，会默认使用该方法来广播事件，调用监听器的onApplicationEvent方法
+	 * @param event the event to multicast
+	 * @param eventType the type of event (can be null)
+	 */
 	@Override
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));

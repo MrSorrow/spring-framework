@@ -74,6 +74,13 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	}
 
 
+	/**
+	 * 初始化前调用的后期处理
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
@@ -99,6 +106,10 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
+	/**
+	 * 实现了Aware接口的bean可以在被初始化之后，取得一些对应的资源
+	 * @param bean
+	 */
 	private void invokeAwareInterfaces(Object bean) {
 		if (bean instanceof Aware) {
 			if (bean instanceof EnvironmentAware) {
@@ -122,6 +133,12 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		}
 	}
 
+	/**
+	 * 初始化后调用的后期处理
+	 * @param bean the new bean instance
+	 * @param beanName the name of the bean
+	 * @return
+	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) {
 		return bean;

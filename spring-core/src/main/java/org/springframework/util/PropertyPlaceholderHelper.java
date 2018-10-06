@@ -133,6 +133,7 @@ public class PropertyPlaceholderHelper {
 		while (startIndex != -1) {
 			int endIndex = findPlaceholderEndIndex(result, startIndex);
 			if (endIndex != -1) {
+				// 获取${}中的内容
 				String placeholder = result.substring(startIndex + this.placeholderPrefix.length(), endIndex);
 				String originalPlaceholder = placeholder;
 				if (!visitedPlaceholders.add(originalPlaceholder)) {
@@ -142,6 +143,7 @@ public class PropertyPlaceholderHelper {
 				// Recursive invocation, parsing placeholders contained in the placeholder key.
 				placeholder = parseStringValue(placeholder, placeholderResolver, visitedPlaceholders);
 				// Now obtain the value for the fully resolved key...
+				// 根据key=config获取到value=custtomTag-Test.xml
 				String propVal = placeholderResolver.resolvePlaceholder(placeholder);
 				if (propVal == null && this.valueSeparator != null) {
 					int separatorIndex = placeholder.indexOf(this.valueSeparator);

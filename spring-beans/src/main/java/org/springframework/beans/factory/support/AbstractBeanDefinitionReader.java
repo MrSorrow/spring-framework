@@ -189,6 +189,13 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		return counter;
 	}
 
+	/**
+	 * 根据配置文件资源路径加载BeanDefinition
+	 * @param location the resource location, to be loaded with the ResourceLoader
+	 * (or ResourcePatternResolver) of this bean definition reader
+	 * @return
+	 * @throws BeanDefinitionStoreException
+	 */
 	@Override
 	public int loadBeanDefinitions(String location) throws BeanDefinitionStoreException {
 		return loadBeanDefinitions(location, null);
@@ -220,6 +227,7 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 			// Resource pattern matching available.
 			try {
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				// 回到XmlBeanFactory加载BeanDefinitions的分析步骤了
 				int loadCount = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					for (Resource resource : resources) {
@@ -250,6 +258,13 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		}
 	}
 
+	/**
+	 * loadBeanDefinitions的重载方法，传入配置文件的字符数组
+	 * @param locations the resource locations, to be loaded with the ResourceLoader
+	 * (or ResourcePatternResolver) of this bean definition reader
+	 * @return
+	 * @throws BeanDefinitionStoreException
+	 */
 	@Override
 	public int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException {
 		Assert.notNull(locations, "Location array must not be null");

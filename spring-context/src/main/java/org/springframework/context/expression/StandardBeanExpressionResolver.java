@@ -83,6 +83,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 
 
 	/**
+	 * 构造函数，创建SpelExpressionParser实例借其进行SpEL解析
 	 * Create a new {@code StandardBeanExpressionResolver} with default settings.
 	 */
 	public StandardBeanExpressionResolver() {
@@ -90,6 +91,7 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	}
 
 	/**
+	 * 构造函数，创建SpelExpressionParser实例借其进行SpEL解析
 	 * Create a new {@code StandardBeanExpressionResolver} with the given bean class loader,
 	 * using it as the basis for expression compilation.
 	 * @param beanClassLoader the factory's bean class loader
@@ -130,6 +132,13 @@ public class StandardBeanExpressionResolver implements BeanExpressionResolver {
 	}
 
 
+	/**
+	 * 实现BeanExpressionResolver接口方法
+	 * @param value the value to check
+	 * @param evalContext the evaluation context
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object evaluate(@Nullable String value, BeanExpressionContext evalContext) throws BeansException {

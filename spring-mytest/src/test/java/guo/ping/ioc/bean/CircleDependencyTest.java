@@ -22,7 +22,7 @@ public class CircleDependencyTest {
 	public void testCircleDependency() {
 		ClassPathResource resource = new ClassPathResource("circleDependency-Test.xml");
 		BeanFactory beanFactory = new XmlBeanFactory(resource);
-		((XmlBeanFactory) beanFactory).setAllowCircularReferences(false);
+//		((XmlBeanFactory) beanFactory).setAllowCircularReferences(false);
 //		A a = (A) beanFactory.getBean("a");
 		D d = (D) beanFactory.getBean("d");
 	}

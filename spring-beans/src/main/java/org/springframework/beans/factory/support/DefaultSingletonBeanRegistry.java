@@ -122,6 +122,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				throw new IllegalStateException("Could not register object [" + singletonObject +
 						"] under bean name '" + beanName + "': there is already object [" + oldObject + "] bound");
 			}
+			// 加入容器缓存
 			addSingleton(beanName, singletonObject);
 		}
 	}

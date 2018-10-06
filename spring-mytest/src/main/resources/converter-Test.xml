@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+		<property name="converters">
+			<list>
+				<bean class="guo.ping.ioc.converter.MyConverter" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="user" class="guo.ping.ioc.propertieseditor.User">
+		<property name="userName" value="wgp" />
+		<property name="date" value="2018-10-01" />
+	</bean>
+
+</beans>

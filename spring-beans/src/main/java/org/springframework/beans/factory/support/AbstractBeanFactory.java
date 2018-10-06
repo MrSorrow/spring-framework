@@ -877,6 +877,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		return result;
 	}
 
+	/**
+	 * 注册BeanPostProcessor
+	 * @param beanPostProcessor the post-processor to register
+	 */
 	@Override
 	public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
 		Assert.notNull(beanPostProcessor, "BeanPostProcessor must not be null");
@@ -1465,6 +1469,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
+	 * 调用注册的SpEL解析器
 	 * Evaluate the given String as contained in a bean definition,
 	 * potentially resolving it as an expression.
 	 * @param value the value to check

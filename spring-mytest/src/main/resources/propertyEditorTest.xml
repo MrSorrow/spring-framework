@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!--自定义属性编辑器-->
+	<bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+		<property name="customEditors">
+			<map>
+				<entry key="java.util.Date" value="guo.ping.ioc.propertieseditor.DatePropertyEditor" />
+			</map>
+		</property>
+	</bean>
+
+	<!--<bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">-->
+		<!--<property name="propertyEditorRegistrars">-->
+			<!--<list>-->
+				<!--<bean class="guo.ping.ioc.propertieseditor.DatePropertyEditorRegistrar" />-->
+			<!--</list>-->
+		<!--</property>-->
+	<!--</bean>-->
+
+	<bean id="user" class="guo.ping.ioc.propertieseditor.User">
+		<property name="userName" value="wgp" />
+		<property name="date" value="2018-10-01" />
+	</bean>
+
+</beans>

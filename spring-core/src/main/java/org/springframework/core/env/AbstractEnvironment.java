@@ -518,6 +518,10 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 		this.propertyResolver.setRequiredProperties(requiredProperties);
 	}
 
+	/**
+	 * 对属性进行验证
+	 * @throws MissingRequiredPropertiesException
+	 */
 	@Override
 	public void validateRequiredProperties() throws MissingRequiredPropertiesException {
 		this.propertyResolver.validateRequiredProperties();
