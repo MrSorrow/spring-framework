@@ -222,10 +222,15 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
+
+		// 获取切点表达式，并判断是否能够匹配上目标类
 		if (!pc.getClassFilter().matches(targetClass)) {
 			return false;
 		}
 
+		// 然后继续寻找匹配类中哪个方法
+
+		// pc.getMethodMatcher()和pc.getClassFilter()一样都能够获得切点表达式，然后去匹配
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
@@ -238,6 +243,7 @@ public abstract class AopUtils {
 		}
 
 		Set<Class<?>> classes = new LinkedHashSet<>();
+		// 如果是代理类，则需要返回原始类
 		if (!Proxy.isProxyClass(targetClass)) {
 			classes.add(ClassUtils.getUserClass(targetClass));
 		}
@@ -245,6 +251,8 @@ public abstract class AopUtils {
 
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
+
+			// 遍历类中的所有方法
 			for (Method method : methods) {
 				if (introductionAwareMethodMatcher != null ?
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
@@ -280,13 +288,16 @@ public abstract class AopUtils {
 	 * @return whether the pointcut can apply on any method
 	 */
 	public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
+		// 如果增强是引介增强，那么直接去匹配targetClass即可
 		if (advisor instanceof IntroductionAdvisor) {
 			return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
 		}
+		// 如果属于PointcutAdvisor，继续调用重载方法
 		else if (advisor instanceof PointcutAdvisor) {
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
 			return canApply(pca.getPointcut(), targetClass, hasIntroductions);
 		}
+		// 其余的默认为符合条件
 		else {
 			// It doesn't have a pointcut so we assume it applies.
 			return true;
@@ -294,6 +305,7 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 主要功能是寻找所有增强器中适用于当前class的增强器
 	 * Determine the sublist of the {@code candidateAdvisors} list
 	 * that is applicable to the given class.
 	 * @param candidateAdvisors the Advisors to evaluate
@@ -305,8 +317,12 @@ public abstract class AopUtils {
 		if (candidateAdvisors.isEmpty()) {
 			return candidateAdvisors;
 		}
+		// 保存筛选的合适增强器
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
+
+		// 首先处理引介增强
 		for (Advisor candidate : candidateAdvisors) {
+			// 核心匹配实现：canApply()
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
@@ -314,9 +330,10 @@ public abstract class AopUtils {
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
-				// already processed
+				// 引介增强已经处理
 				continue;
 			}
+			// 如果不是IntroductionAdvisor实例，对于普通的增强，调用canApply()重载方法
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}
@@ -325,6 +342,7 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 通过反射直接调用切点方法，就是目标对象原来的方法
 	 * Invoke the given target via reflection, as part of an AOP method invocation.
 	 * @param target the target object
 	 * @param method the method to invoke

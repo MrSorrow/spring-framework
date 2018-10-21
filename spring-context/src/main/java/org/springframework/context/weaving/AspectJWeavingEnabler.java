@@ -79,6 +79,7 @@ public class AspectJWeavingEnabler
 
 
 	/**
+	 * 开启AspectJ LWT织入功能
 	 * Enable AspectJ weaving with the given {@link LoadTimeWeaver}.
 	 * @param weaverToUse the LoadTimeWeaver to apply to (or {@code null} for a default weaver)
 	 * @param beanClassLoader the class loader to create a default weaver for (if necessary)
@@ -86,6 +87,7 @@ public class AspectJWeavingEnabler
 	public static void enableAspectJWeaving(
 			@Nullable LoadTimeWeaver weaverToUse, @Nullable ClassLoader beanClassLoader) {
 
+		// 此时已经被初始化为DefaultContextLoadTimeWeaver
 		if (weaverToUse == null) {
 			if (InstrumentationLoadTimeWeaver.isInstrumentationAvailable()) {
 				weaverToUse = new InstrumentationLoadTimeWeaver(beanClassLoader);
@@ -94,12 +96,14 @@ public class AspectJWeavingEnabler
 				throw new IllegalStateException("No LoadTimeWeaver available");
 			}
 		}
+		// 使用DefaultContextLoadTimeWeaver类型的bean中的loadTimeWeaver属性注册转换器
 		weaverToUse.addTransformer(
 				new AspectJClassBypassingClassFileTransformer(new ClassPreProcessorAgentAdapter()));
 	}
 
 
 	/**
+	 * 告诉 AspectJ 以 org.aspectj 或者 org/aspectj 开头的类不进行处理
 	 * ClassFileTransformer decorator that suppresses processing of AspectJ
 	 * classes in order to avoid potential LinkageErrors.
 	 * @see org.springframework.context.annotation.LoadTimeWeavingConfiguration

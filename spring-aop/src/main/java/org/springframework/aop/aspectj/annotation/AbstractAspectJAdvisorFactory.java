@@ -68,6 +68,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 
 
 	/**
+	 * 判断是否存在@Aspect
 	 * We consider something to be an AspectJ aspect suitable for use by the Spring AOP system
 	 * if it has the @Aspect annotation, and was not compiled by ajc. The reason for this latter test
 	 * is that aspects written in the code-style (AspectJ language) also have the annotation present
@@ -128,6 +129,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@SuppressWarnings("unchecked")
 	@Nullable
 	protected static AspectJAnnotation<?> findAspectJAnnotationOnMethod(Method method) {
+		// 设置敏感的注解类
 		Class<?>[] classesToLookFor = new Class<?>[] {
 				Before.class, Around.class, After.class, AfterReturning.class, AfterThrowing.class, Pointcut.class};
 		for (Class<?> c : classesToLookFor) {
@@ -139,8 +141,16 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 		return null;
 	}
 
+	/**
+	 * 获取指定方法上的注解并使用AspectJAnnotation封装
+	 * @param method
+	 * @param toLookFor
+	 * @param <A>
+	 * @return
+	 */
 	@Nullable
 	private static <A extends Annotation> AspectJAnnotation<A> findAnnotation(Method method, Class<A> toLookFor) {
+		// 返回的泛型其实是对应的注解类型，如org.aspectj.lang.annotation.Around
 		A result = AnnotationUtils.findAnnotation(method, toLookFor);
 		if (result != null) {
 			return new AspectJAnnotation<>(result);

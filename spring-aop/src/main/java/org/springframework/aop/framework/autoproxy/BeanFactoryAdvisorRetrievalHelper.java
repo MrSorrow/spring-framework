@@ -59,6 +59,7 @@ public class BeanFactoryAdvisorRetrievalHelper {
 
 
 	/**
+	 * 从XML配置文件中获取增强
 	 * Find all eligible Advisor beans in the current bean factory,
 	 * ignoring FactoryBeans and excluding beans that are currently in creation.
 	 * @return the list of {@link org.springframework.aop.Advisor} beans
@@ -68,6 +69,7 @@ public class BeanFactoryAdvisorRetrievalHelper {
 		// Determine list of advisor bean names, if not cached already.
 		String[] advisorNames = null;
 		synchronized (this) {
+			// 从beanFactory中获取增强器
 			advisorNames = this.cachedAdvisorBeanNames;
 			if (advisorNames == null) {
 				// Do not initialize FactoryBeans here: We need to leave all regular beans
@@ -91,6 +93,7 @@ public class BeanFactoryAdvisorRetrievalHelper {
 				}
 				else {
 					try {
+						// 获取到所有增强器名称后将其对应的实例添加至list
 						advisors.add(this.beanFactory.getBean(name, Advisor.class));
 					}
 					catch (BeanCreationException ex) {

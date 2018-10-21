@@ -55,6 +55,7 @@ public abstract class AutoProxyUtils {
 
 
 	/**
+	 * 根据beanDefinition中preserveTargetClass属性配置判断是否应该代理
 	 * Determine whether the given bean should be proxied with its target
 	 * class rather than its interfaces. Checks the
 	 * {@link #PRESERVE_TARGET_CLASS_ATTRIBUTE "preserveTargetClass" attribute}
@@ -66,6 +67,7 @@ public abstract class AutoProxyUtils {
 	public static boolean shouldProxyTargetClass(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName) {
 		if (beanName != null && beanFactory.containsBeanDefinition(beanName)) {
 			BeanDefinition bd = beanFactory.getBeanDefinition(beanName);
+			// beanDefinition中是否定义了preserveTargetClass属性为true
 			return Boolean.TRUE.equals(bd.getAttribute(PRESERVE_TARGET_CLASS_ATTRIBUTE));
 		}
 		return false;

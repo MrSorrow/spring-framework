@@ -38,10 +38,19 @@ import org.springframework.lang.Nullable;
  */
 class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {
 
+	/**
+	 * 解析aspectj-autoproxy自定义标签
+	 * @param element the element that is to be parsed into one or more {@link BeanDefinition BeanDefinitions}
+	 * @param parserContext the object encapsulating the current state of the parsing process;
+	 * provides access to a {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
+		// 注册AnnotationAwareAspectJAutoProxyCreator
 		AopNamespaceUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(parserContext, element);
+		// 对于标签中的子标签的处理
 		extendBeanDefinition(element, parserContext);
 		return null;
 	}
@@ -55,8 +64,10 @@ class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	private void addIncludePatterns(Element element, ParserContext parserContext, BeanDefinition beanDef) {
+		// 用于保存解析的属性
 		ManagedList<TypedStringValue> includePatterns = new ManagedList<>();
 		NodeList childNodes = element.getChildNodes();
+		// 遍历子节点
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node node = childNodes.item(i);
 			if (node instanceof Element) {

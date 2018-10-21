@@ -74,6 +74,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 
 	/**
+	 * 获取bean的注解增强
 	 * Look for AspectJ-annotated aspect beans in the current bean factory,
 	 * and return to a list of Spring AOP Advisors representing them.
 	 * <p>Creates a Spring Advisor for each AspectJ advice method.
@@ -81,6 +82,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> buildAspectJAdvisors() {
+		// 记录保存了被增强的beanName
 		List<String> aspectNames = this.aspectBeanNames;
 
 		if (aspectNames == null) {
@@ -89,25 +91,37 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
+					// 获取的是所有的beanName，因为类型是Object
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
+
+					// 循环遍历所有的beanName，过滤带有@AspectJ注解的类，找出对应的增强方法
 					for (String beanName : beanNames) {
+						// 不合法的bean则略过，由子类定义合法规则，默认返回true
 						if (!isEligibleBean(beanName)) {
 							continue;
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
+						// 获取对应beanName的bean的类型
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
+						// 如果bean的class类存在@AspectJ注解
 						if (this.advisorFactory.isAspect(beanType)) {
+							// 只要被注解的就记录下来，下次就可以直接使用
 							aspectNames.add(beanName);
+							// 利用AspectMetadata包装了关于该类（用@AspectJ标注的）的一些信息，包括类型，名称，AjType
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+								// 创建了一个工厂，包含了beanFactory和AspectMetadata信息
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+
+								// 解析标记了@AspectJ注解的类中定义的增强器
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+								// 解析结果记录在缓存中
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);
 								}
@@ -124,6 +138,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								}
 								MetadataAwareAspectInstanceFactory factory =
 										new PrototypeAspectInstanceFactory(this.beanFactory, beanName);
+								// 记录在缓存中
 								this.aspectFactoryCache.put(beanName, factory);
 								advisors.addAll(this.advisorFactory.getAdvisors(factory));
 							}
@@ -138,6 +153,8 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 		if (aspectNames.isEmpty()) {
 			return Collections.emptyList();
 		}
+
+		// 当aspectName不为空依据aspectName读取缓存返回
 		List<Advisor> advisors = new ArrayList<>();
 		for (String aspectName : aspectNames) {
 			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
@@ -153,6 +170,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	}
 
 	/**
+	 * 子类可以重新定义规则，返回对应beanName是否是合格的
 	 * Return whether the aspect bean with the given name is eligible.
 	 * @param beanName the name of the aspect bean
 	 * @return whether the bean is eligible

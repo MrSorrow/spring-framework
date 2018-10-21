@@ -735,6 +735,7 @@ public abstract class AnnotationUtils {
 	@Nullable
 	private static <A extends Annotation> A findAnnotation(Class<?> clazz, Class<A> annotationType, Set<Annotation> visited) {
 		try {
+			// 获取class上面标注的AspectJ注解
 			A annotation = clazz.getDeclaredAnnotation(annotationType);
 			if (annotation != null) {
 				return annotation;
@@ -754,6 +755,7 @@ public abstract class AnnotationUtils {
 			return null;
 		}
 
+		// 获取接口，递归查看接口是否拥有@AspectJ注解
 		for (Class<?> ifc : clazz.getInterfaces()) {
 			A annotation = findAnnotation(ifc, annotationType, visited);
 			if (annotation != null) {
@@ -761,6 +763,7 @@ public abstract class AnnotationUtils {
 			}
 		}
 
+		// 获取父类，递归查看父类是否拥有@AspectJ注解
 		Class<?> superclass = clazz.getSuperclass();
 		if (superclass == null || Object.class == superclass) {
 			return null;

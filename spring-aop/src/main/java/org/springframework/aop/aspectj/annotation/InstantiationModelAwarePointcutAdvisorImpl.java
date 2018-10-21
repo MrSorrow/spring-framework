@@ -110,6 +110,7 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 			// A singleton aspect.
 			this.pointcut = this.declaredPointcut;
 			this.lazy = false;
+			// 在封装的过程中还进行了对于增强器的初始化
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
 	}
@@ -163,6 +164,11 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 	}
 
 
+	/**
+	 * 根据注解中的切点表达式信息初始化对应的增强器
+	 * @param pointcut
+	 * @return
+	 */
 	private Advice instantiateAdvice(AspectJExpressionPointcut pointcut) {
 		Advice advice = this.aspectJAdvisorFactory.getAdvice(this.aspectJAdviceMethod, pointcut,
 				this.aspectInstanceFactory, this.declarationOrder, this.aspectName);

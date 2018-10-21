@@ -587,6 +587,7 @@ public abstract class ReflectionUtils {
 			}
 		}
 		if (clazz.getSuperclass() != null) {
+			// 寻找父类递归添加
 			doWithMethods(clazz.getSuperclass(), mc, mf);
 		}
 		else if (clazz.isInterface()) {

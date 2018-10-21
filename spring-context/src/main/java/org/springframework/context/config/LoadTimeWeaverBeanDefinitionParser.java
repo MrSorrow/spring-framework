@@ -61,11 +61,13 @@ class LoadTimeWeaverBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 		if (element.hasAttribute(WEAVER_CLASS_ATTRIBUTE)) {
 			return element.getAttribute(WEAVER_CLASS_ATTRIBUTE);
 		}
+		// org.springframework.context.weaving.DefaultContextLoadTimeWeaver
 		return DEFAULT_LOAD_TIME_WEAVER_CLASS_NAME;
 	}
 
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) {
+		// 只有有了loadTimeWeaver这个bean，才会激活AspectJ
 		return ConfigurableApplicationContext.LOAD_TIME_WEAVER_BEAN_NAME;
 	}
 
@@ -73,8 +75,11 @@ class LoadTimeWeaverBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
+		// 判断aspectj-weaving的属性是on、off还是autodetect
 		if (isAspectJWeavingEnabled(element.getAttribute(ASPECTJ_WEAVING_ATTRIBUTE), parserContext)) {
+			// 是否存在org.springframework.context.config.internalAspectJWeavingEnabler名称的beanDefinition
 			if (!parserContext.getRegistry().containsBeanDefinition(ASPECTJ_WEAVING_ENABLER_BEAN_NAME)) {
+				// 不存在就新建并注册，bean的class为org.springframework.context.weaving.AspectJWeavingEnabler
 				RootBeanDefinition def = new RootBeanDefinition(ASPECTJ_WEAVING_ENABLER_CLASS_NAME);
 				parserContext.registerBeanComponent(
 						new BeanComponentDefinition(def, ASPECTJ_WEAVING_ENABLER_BEAN_NAME));
@@ -86,6 +91,12 @@ class LoadTimeWeaverBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 		}
 	}
 
+	/**
+	 * 判断AspectJ织入是否enable。默认为autodetect，检测依据为META-INF/aop.xml（固定写死了）文件是否存在
+	 * @param value
+	 * @param parserContext
+	 * @return
+	 */
 	protected boolean isAspectJWeavingEnabled(String value, ParserContext parserContext) {
 		if ("on".equals(value)) {
 			return true;
@@ -94,7 +105,7 @@ class LoadTimeWeaverBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 			return false;
 		}
 		else {
-			// Determine default...
+			// 检查是否存在META-INF/aop.xml文件
 			ClassLoader cl = parserContext.getReaderContext().getBeanClassLoader();
 			return (cl != null && cl.getResource(AspectJWeavingEnabler.ASPECTJ_AOP_XML_RESOURCE) != null);
 		}

@@ -174,6 +174,7 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 
 	@Override
 	public ClassFilter getClassFilter() {
+		// 获取切点表达式
 		obtainPointcutExpression();
 		return this;
 	}
@@ -267,6 +268,11 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 		return obtainPointcutExpression();
 	}
 
+	/**
+	 * 判断切点表达式指定的范围是否包含了目标类
+	 * @param targetClass
+	 * @return
+	 */
 	@Override
 	public boolean matches(Class<?> targetClass) {
 		PointcutExpression pointcutExpression = obtainPointcutExpression();

@@ -14,5 +14,7 @@ repositories {
 dependencies {
     compile(project(":spring-beans"))
     compile(project(":spring-context"))
+    compile(project(":spring-aop"))
+    compile group: 'org.springframework', name: 'spring-aspects', version: '5.0.7.RELEASE'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

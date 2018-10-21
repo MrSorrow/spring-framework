@@ -32,6 +32,7 @@ import org.springframework.aop.framework.AopConfigException;
 import org.springframework.aop.support.ComposablePointcut;
 
 /**
+ * 切面元数据类
  * Metadata for an AspectJ aspect class, with an additional Spring AOP pointcut
  * for the per clause.
  *
@@ -47,6 +48,7 @@ import org.springframework.aop.support.ComposablePointcut;
 public class AspectMetadata implements Serializable {
 
 	/**
+	 * 切面的名字 可能是类的全限定类名 也可能是Spring容器中bean的名字
 	 * The name of this aspect as defined to Spring (the bean name) -
 	 * allows us to determine if two pieces of advice come from the
 	 * same aspect and hence their relative precedence.
@@ -54,18 +56,22 @@ public class AspectMetadata implements Serializable {
 	private final String aspectName;
 
 	/**
+	 * 切面类 指带有切面注解的类
 	 * The aspect class, stored separately for re-resolution of the
 	 * corresponding AjType on deserialization.
 	 */
 	private final Class<?> aspectClass;
 
 	/**
+	 * 类的类型 这个是AspectJ中定义的类  存储了aspectClass类的类相关信息
+	 * 实现类为 AjTypeImpl
 	 * AspectJ reflection information (AspectJ 5 / Java 5 specific).
 	 * Re-resolved on deserialization since it isn't serializable itself.
 	 */
 	private transient AjType<?> ajType;
 
 	/**
+	 * Spring AOP 中的切点表达式
 	 * Spring AOP pointcut corresponding to the per clause of the
 	 * aspect. Will be the Pointcut.TRUE canonical instance in the
 	 * case of a singleton, otherwise an AspectJExpressionPointcut.
@@ -84,6 +90,7 @@ public class AspectMetadata implements Serializable {
 		Class<?> currClass = aspectClass;
 		AjType<?> ajType = null;
 		while (currClass != Object.class) {
+			// get不到会创建返回
 			AjType<?> ajTypeToCheck = AjTypeSystem.getAjType(currClass);
 			if (ajTypeToCheck.isAspect()) {
 				ajType = ajTypeToCheck;
