@@ -78,6 +78,7 @@ public abstract class TransactionSynchronizationManager {
 
 	private static final Log logger = LogFactory.getLog(TransactionSynchronizationManager.class);
 
+	// NamedThreadLocal继承自ThreadLocal，主要功能是给ThreadLocal设定一个名字
 	private static final ThreadLocal<Map<Object, Object>> resources =
 			new NamedThreadLocal<>("Transactional resources");
 
@@ -146,10 +147,12 @@ public abstract class TransactionSynchronizationManager {
 	}
 
 	/**
+	 * 从ThreadLocal保存的Map中依据key取出value
 	 * Actually check the value of the resource that is bound for the given key.
 	 */
 	@Nullable
 	private static Object doGetResource(Object actualKey) {
+		// resources(ThreadLocal)中获得对象
 		Map<Object, Object> map = resources.get();
 		if (map == null) {
 			return null;
@@ -168,6 +171,7 @@ public abstract class TransactionSynchronizationManager {
 	}
 
 	/**
+	 * 保存对象之resources ThreadLocal的Map中
 	 * Bind the given resource for the given key to the current thread.
 	 * @param key the key to bind the value to (usually the resource factory)
 	 * @param value the value to bind (usually the active resource object)
@@ -279,6 +283,8 @@ public abstract class TransactionSynchronizationManager {
 	}
 
 	/**
+	 * synchronizations也是一个ThreadLocal，其中保存的是Set集合，Set集合存放TransactionSynchronization，
+	 * 例如ConnectionSynchronization，ConnectionSynchronization包装了ConnectionHolder和DataSource信息
 	 * Register a new transaction synchronization for the current thread.
 	 * Typically called by resource management code.
 	 * <p>Note that synchronizations can implement the

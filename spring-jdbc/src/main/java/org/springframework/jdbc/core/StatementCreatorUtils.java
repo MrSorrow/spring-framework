@@ -286,6 +286,16 @@ public abstract class StatementCreatorUtils {
 		}
 	}
 
+	/**
+	 * 对各种类型的参数进行设置
+	 * @param ps
+	 * @param paramIndex
+	 * @param sqlType
+	 * @param typeName
+	 * @param scale
+	 * @param inValue
+	 * @throws SQLException
+	 */
 	private static void setValue(PreparedStatement ps, int paramIndex, int sqlType,
 			@Nullable String typeName, @Nullable Integer scale, Object inValue) throws SQLException {
 

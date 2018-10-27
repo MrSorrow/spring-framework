@@ -86,6 +86,13 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 	}
 
 
+	/**
+	 * 实现ResultSetExtractor接口方法利用RowMapper的mapRow方法将结果进行封装转换至POJO并返回
+	 * @param rs the ResultSet to extract data from. Implementations should
+	 * not close this: it will be closed by the calling JdbcTemplate.
+	 * @return
+	 * @throws SQLException
+	 */
 	@Override
 	public List<T> extractData(ResultSet rs) throws SQLException {
 		List<T> results = (this.rowsExpected > 0 ? new ArrayList<>(this.rowsExpected) : new ArrayList<>());

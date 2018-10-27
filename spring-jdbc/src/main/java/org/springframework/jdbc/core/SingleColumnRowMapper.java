@@ -103,7 +103,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public T mapRow(ResultSet rs, int rowNum) throws SQLException {
-		// Validate column count.
+		// 验证返回结果数
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int nrOfColumns = rsmd.getColumnCount();
 		if (nrOfColumns != 1) {
@@ -111,9 +111,11 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 		}
 
 		// Extract column value from JDBC ResultSet.
+		// 抽取第一个结果进行处理
 		Object result = getColumnValue(rs, 1, this.requiredType);
 		if (result != null && this.requiredType != null && !this.requiredType.isInstance(result)) {
 			// Extracted value does not match already: try to convert it.
+			// 转换到对应的类型
 			try {
 				return (T) convertValueToRequiredType(result, this.requiredType);
 			}
@@ -197,10 +199,12 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 		else if (Number.class.isAssignableFrom(requiredType)) {
 			if (value instanceof Number) {
 				// Convert original Number to target Number class.
+				// 转换原始Number类型的实体到Number类
 				return NumberUtils.convertNumberToTargetClass(((Number) value), (Class<Number>) requiredType);
 			}
 			else {
 				// Convert stringified value to target Number class.
+				// 转换String类型的值到Number类
 				return NumberUtils.parseNumber(value.toString(),(Class<Number>) requiredType);
 			}
 		}

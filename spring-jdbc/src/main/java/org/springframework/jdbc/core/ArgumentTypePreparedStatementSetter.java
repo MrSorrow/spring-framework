@@ -55,12 +55,19 @@ public class ArgumentTypePreparedStatementSetter implements PreparedStatementSet
 	}
 
 
+	/**
+	 * 重写的setValues，对PreparedStatement的参数和参数类型进行封装
+	 * @param ps the PreparedStatement to invoke setter methods on
+	 * @throws SQLException
+	 */
 	@Override
 	public void setValues(PreparedStatement ps) throws SQLException {
 		int parameterPosition = 1;
 		if (this.args != null && this.argTypes != null) {
+			// 遍历每个参数以作类型匹配及转换
 			for (int i = 0; i < this.args.length; i++) {
 				Object arg = this.args[i];
+				// 如果参数是集合类型，且配置的参数类型不是数组，那么就需要进入集合内部递归解析集合内部属性
 				if (arg instanceof Collection && this.argTypes[i] != Types.ARRAY) {
 					Collection<?> entries = (Collection<?>) arg;
 					for (Object entry : entries) {
@@ -78,6 +85,7 @@ public class ArgumentTypePreparedStatementSetter implements PreparedStatementSet
 					}
 				}
 				else {
+					// 解析当前属性
 					doSetValue(ps, parameterPosition, this.argTypes[i], arg);
 					parameterPosition++;
 				}
@@ -86,6 +94,7 @@ public class ArgumentTypePreparedStatementSetter implements PreparedStatementSet
 	}
 
 	/**
+	 * 对单个参数及类型的匹配处理
 	 * Set the value for the prepared statement's specified parameter position using the passed in
 	 * value and type. This method can be overridden by sub-classes if needed.
 	 * @param ps the PreparedStatement

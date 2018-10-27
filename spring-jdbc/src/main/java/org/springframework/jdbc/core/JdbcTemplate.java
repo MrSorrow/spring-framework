@@ -162,6 +162,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	 * @param dataSource the JDBC DataSource to obtain connections from
 	 */
 	public JdbcTemplate(DataSource dataSource) {
+		// 注入连接池对象依赖
 		setDataSource(dataSource);
 		afterPropertiesSet();
 	}
@@ -363,6 +364,13 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	// Methods dealing with static SQL (java.sql.Statement)
 	//-------------------------------------------------------------------------
 
+	/**
+	 * 不带参数的sql执行
+	 * @param action callback object that specifies the action
+	 * @param <T>
+	 * @return
+	 * @throws DataAccessException
+	 */
 	@Override
 	@Nullable
 	public <T> T execute(StatementCallback<T> action) throws DataAccessException {
@@ -371,6 +379,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		Connection con = DataSourceUtils.getConnection(obtainDataSource());
 		Statement stmt = null;
 		try {
+			// 直接由数据库连接创建出Statement
 			stmt = con.createStatement();
 			applyStatementSettings(stmt);
 			T result = action.doInStatement(stmt);
@@ -597,6 +606,14 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	// Methods dealing with prepared statements
 	//-------------------------------------------------------------------------
 
+	/**
+	 * 作为数据库操作的核心入口，将大多数数据库操作相同的步骤统一封装，而将个性化的操作使用参数PreparedStatementCallback进行回调
+	 * @param psc object that can create a PreparedStatement given a Connection
+	 * @param action callback object that specifies the action
+	 * @param <T>
+	 * @return
+	 * @throws DataAccessException
+	 */
 	@Override
 	@Nullable
 	public <T> T execute(PreparedStatementCreator psc, PreparedStatementCallback<T> action)
@@ -609,12 +626,17 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 			logger.debug("Executing prepared SQL statement" + (sql != null ? " [" + sql + "]" : ""));
 		}
 
+		// 获取数据库连接(Spring保证线程中的数据库操作都是使用同一个事务连接)
 		Connection con = DataSourceUtils.getConnection(obtainDataSource());
 		PreparedStatement ps = null;
 		try {
+			// 获取PreparedStatement
 			ps = psc.createPreparedStatement(con);
+			// 设置PreparedStatement属性(应用用户设定的输入参数)
 			applyStatementSettings(ps);
+			// 执行PreparedStatement，返回执行结果
 			T result = action.doInPreparedStatement(ps);
+			// 警告处理
 			handleWarnings(ps);
 			return result;
 		}
@@ -627,6 +649,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 			String sql = getSql(psc);
 			JdbcUtils.closeStatement(ps);
 			ps = null;
+			// 释放连接
 			DataSourceUtils.releaseConnection(con, getDataSource());
 			con = null;
 			throw translateException("PreparedStatementCallback", sql, ex);
@@ -636,6 +659,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 				((ParameterDisposer) psc).cleanupParameters();
 			}
 			JdbcUtils.closeStatement(ps);
+			// 释放连接
 			DataSourceUtils.releaseConnection(con, getDataSource());
 		}
 	}
@@ -647,6 +671,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	}
 
 	/**
+	 * 带参数的查询
 	 * Query using a prepared statement, allowing for a PreparedStatementCreator
 	 * and a PreparedStatementSetter. Most other query methods use this method,
 	 * but application code will always work with either a creator or a setter.
@@ -667,15 +692,19 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		logger.debug("Executing prepared SQL query");
 
 		return execute(psc, new PreparedStatementCallback<T>() {
+			// 重写了doInPreparedStatement方法，定义执行PreparedStatement逻辑
 			@Override
 			@Nullable
 			public T doInPreparedStatement(PreparedStatement ps) throws SQLException {
 				ResultSet rs = null;
 				try {
 					if (pss != null) {
+						// 设置了PreparedStatement所需的全部参数
 						pss.setValues(ps);
 					}
+					// 执行查询
 					rs = ps.executeQuery();
+					// 将结果进行封装转换至POJO
 					return rse.extractData(rs);
 				}
 				finally {
@@ -697,12 +726,14 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	@Override
 	@Nullable
 	public <T> T query(String sql, @Nullable PreparedStatementSetter pss, ResultSetExtractor<T> rse) throws DataAccessException {
+		// 利用SimplePreparedStatementCreator包装sql语句，能够获取PreparedStatement
 		return query(new SimplePreparedStatementCreator(sql), pss, rse);
 	}
 
 	@Override
 	@Nullable
 	public <T> T query(String sql, Object[] args, int[] argTypes, ResultSetExtractor<T> rse) throws DataAccessException {
+		// 利用newArgTypePreparedStatementSetter包装参数和参数类型
 		return query(sql, newArgTypePreparedStatementSetter(args, argTypes), rse);
 	}
 
@@ -854,6 +885,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		return result(query(sql, args, new SqlRowSetResultSetExtractor()));
 	}
 
+	// sql和参数
 	protected int update(final PreparedStatementCreator psc, @Nullable final PreparedStatementSetter pss)
 			throws DataAccessException {
 
@@ -862,8 +894,10 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		return updateCount(execute(psc, ps -> {
 			try {
 				if (pss != null) {
+					// 设置PreparedStatement(ps)所需要的全部参数
 					pss.setValues(ps);
 				}
+				// 执行PreparedStatement
 				int rows = ps.executeUpdate();
 				if (logger.isTraceEnabled()) {
 					logger.trace("SQL update affected " + rows + " rows");
@@ -912,11 +946,13 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 		}));
 	}
 
+	// 使用SimplePreparedStatementCreator对sql语句进行包装
 	@Override
 	public int update(String sql, @Nullable PreparedStatementSetter pss) throws DataAccessException {
 		return update(new SimplePreparedStatementCreator(sql), pss);
 	}
 
+	// 使用newArgTypePreparedStatementSetter对参数以及参数类型进行包装
 	@Override
 	public int update(String sql, Object[] args, int[] argTypes) throws DataAccessException {
 		return update(sql, newArgTypePreparedStatementSetter(args, argTypes));
@@ -1322,6 +1358,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	}
 
 	/**
+	 * 设置JDBC Statement，应用用户设定的输入参数
 	 * Prepare the given JDBC Statement (or PreparedStatement or CallableStatement),
 	 * applying statement settings such as fetch size, max rows, and query timeout.
 	 * @param stmt the JDBC Statement to prepare
@@ -1332,10 +1369,12 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	 * @see org.springframework.jdbc.datasource.DataSourceUtils#applyTransactionTimeout
 	 */
 	protected void applyStatementSettings(Statement stmt) throws SQLException {
+		// fetchSize表示resultSet一次性从服务器上取得多少行数据回来，这样调用rs.next时直接从内存读，无需网络交互，提高效率
 		int fetchSize = getFetchSize();
 		if (fetchSize != -1) {
 			stmt.setFetchSize(fetchSize);
 		}
+		// maxRows将此Statement对象生成的所有ResultSet对象可包含的最大行数限制设置为定数
 		int maxRows = getMaxRows();
 		if (maxRows != -1) {
 			stmt.setMaxRows(maxRows);
@@ -1367,6 +1406,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	}
 
 	/**
+	 * 警告处理
 	 * Throw an SQLWarningException if we're not ignoring warnings,
 	 * else log the warnings (at debug level).
 	 * @param stmt the current JDBC statement
@@ -1374,8 +1414,10 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	 * @see org.springframework.jdbc.SQLWarningException
 	 */
 	protected void handleWarnings(Statement stmt) throws SQLException {
+		// 当设置为忽略警告时只会尝试打印日志
 		if (isIgnoreWarnings()) {
 			if (logger.isDebugEnabled()) {
+				// 如果日志开启就打印
 				SQLWarning warningToLog = stmt.getWarnings();
 				while (warningToLog != null) {
 					logger.debug("SQLWarning ignored: SQL state '" + warningToLog.getSQLState() + "', error code '" +
@@ -1384,12 +1426,14 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 				}
 			}
 		}
+		// 不忽略警告就直接抛出异常
 		else {
 			handleWarnings(stmt.getWarnings());
 		}
 	}
 
 	/**
+	 * 直接抛出异常
 	 * Throw an SQLWarningException if encountering an actual warning.
 	 * @param warning the warnings object from the current statement.
 	 * May be {@code null}, in which case this method does nothing.
@@ -1511,6 +1555,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 
 
 	/**
+	 * 通过sql语句和数据库连接返回PreparedStatement
 	 * Simple adapter for PreparedStatementCreator, allowing to use a plain SQL statement.
 	 */
 	private static class SimplePreparedStatementCreator implements PreparedStatementCreator, SqlProvider {

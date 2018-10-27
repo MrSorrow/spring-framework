@@ -60,6 +60,7 @@ public abstract class DataSourceUtils {
 
 
 	/**
+	 * 从连接池中获取一个数据库连接
 	 * Obtain a Connection from the given DataSource. Translates SQLExceptions into
 	 * the Spring hierarchy of unchecked generic data access exceptions, simplifying
 	 * calling code and making any exception that is thrown more meaningful.
@@ -86,6 +87,7 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 从连接池中获取一个数据库连接
 	 * Actually obtain a JDBC Connection from the given DataSource.
 	 * Same as {@link #getConnection}, but throwing the original SQLException.
 	 * <p>Is aware of a corresponding Connection bound to the current thread, for example
@@ -100,35 +102,46 @@ public abstract class DataSourceUtils {
 	public static Connection doGetConnection(DataSource dataSource) throws SQLException {
 		Assert.notNull(dataSource, "No DataSource specified");
 
+		// 从ThreadLocal中获取线程独有的连接，保证了同一线程拥有的是同一个连接
 		ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
 		if (conHolder != null && (conHolder.hasConnection() || conHolder.isSynchronizedWithTransaction())) {
+			// conHolder请求加1
 			conHolder.requested();
 			if (!conHolder.hasConnection()) {
+				// 如果conHolder中没有连接，就保存在conHolder中
 				logger.debug("Fetching resumed JDBC Connection from DataSource");
 				conHolder.setConnection(fetchConnection(dataSource));
 			}
+			// 如果conHolder中有连接，直接获取就行
 			return conHolder.getConnection();
 		}
-		// Else we either got no holder or an empty thread-bound holder here.
+
+		// 否则我们如果在ThreadLocal中没有ConnectionHolder或者一个没有连接的ConnectionHolder，就创建并保存至ThreadLocal中
 
 		logger.debug("Fetching JDBC Connection from DataSource");
 		Connection con = fetchConnection(dataSource);
 
+		// 当前线程支持同步
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
 			logger.debug("Registering transaction synchronization for JDBC Connection");
 			// Use same Connection for further JDBC actions within the transaction.
 			// Thread-bound object will get removed by synchronization at transaction completion.
+			// 在事务中使用同一数据库连接
 			ConnectionHolder holderToUse = conHolder;
 			if (holderToUse == null) {
+				// 没有holder和连接创建holder和连接
 				holderToUse = new ConnectionHolder(con);
 			}
 			else {
+				// 没有连接创建连接
 				holderToUse.setConnection(con);
 			}
+			// 记录数据库连接
 			holderToUse.requested();
 			TransactionSynchronizationManager.registerSynchronization(
 					new ConnectionSynchronization(holderToUse, dataSource));
 			holderToUse.setSynchronizedWithTransaction(true);
+			// 将ConnectionHolder保存至ThreadLocal中
 			if (holderToUse != conHolder) {
 				TransactionSynchronizationManager.bindResource(dataSource, holderToUse);
 			}
@@ -138,6 +151,7 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 从线程池中获取一个连接，直接调用dataSource.getConnection()
 	 * Actually fetch a {@link Connection} from the given {@link DataSource},
 	 * defensively turning an unexpected {@code null} return value from
 	 * {@link DataSource#getConnection()} into an {@link IllegalStateException}.
@@ -269,6 +283,7 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 将当前事务的超时时间设置给Statement的超时时间
 	 * Apply the specified timeout - overridden by the current transaction timeout,
 	 * if any - to the given JDBC Statement object.
 	 * @param stmt the JDBC Statement object
@@ -294,6 +309,7 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 释放连接归还连接池
 	 * Close the given Connection, obtained from the given DataSource,
 	 * if it is not managed externally (that is, not bound to the thread).
 	 * @param con the Connection to close if necessary
@@ -315,6 +331,7 @@ public abstract class DataSourceUtils {
 	}
 
 	/**
+	 * 释放连接归还连接池
 	 * Actually close the given Connection, obtained from the given DataSource.
 	 * Same as {@link #releaseConnection}, but throwing the original SQLException.
 	 * <p>Directly accessed by {@link TransactionAwareDataSourceProxy}.
@@ -330,6 +347,7 @@ public abstract class DataSourceUtils {
 			return;
 		}
 		if (dataSource != null) {
+			// 当前线程存在事务的情况下说明存在共用数据库连接，直接使用ConnectionHolder中的released方法进行连接数减一而不是真正的释放连接
 			ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
 			if (conHolder != null && connectionEquals(conHolder, con)) {
 				// It's the transactional Connection: Don't close it.
@@ -350,6 +368,7 @@ public abstract class DataSourceUtils {
 	 * @see SmartDataSource#shouldClose(Connection)
 	 */
 	public static void doCloseConnection(Connection con, @Nullable DataSource dataSource) throws SQLException {
+		// 如果是SmartDataSource且SmartDataSource中没有要求连接关闭则不进行关闭
 		if (!(dataSource instanceof SmartDataSource) || ((SmartDataSource) dataSource).shouldClose(con)) {
 			con.close();
 		}
