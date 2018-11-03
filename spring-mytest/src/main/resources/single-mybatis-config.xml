@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<setting name="cacheEnabled" value="false"/>
+		<setting name="useGeneratedKeys" value="true"/>
+		<setting name="defaultExecutorType" value="REUSE"/>
+	</settings>
+	<!--定义guo.ping.mybatis.Actor的别名，mapper文件中发挥作用-->
+	<typeAliases>
+		<typeAlias type="guo.ping.mybatis.Actor" alias="Actor" />
+	</typeAliases>
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="jdbc"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="com.mysql.jdbc.Driver" />
+				<property name="url" value="jdbc:mysql://127.0.0.1:3306/sakila" />
+				<property name="username" value="root" />
+				<property name="password" value="1234" />
+			</dataSource>
+		</environment>
+	</environments>
+	<!--定义mapper文件路径-->
+	<mappers>
+		<mapper resource="guo/ping/mybatis/ActorMapper.xml" />
+	</mappers>
+</configuration>

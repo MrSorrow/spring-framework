@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace是mapper接口的全限定类名，否则运行时报错"is not known to the MapperRegistry"-->
+<mapper namespace="guo.ping.mybatis.IActorMapper">
+	<insert id="insertActor" parameterType="Actor">
+		insert into actor(first_name, last_name, last_update) values (#{firstName}, #{lastName}, #{lastUpdate})
+	</insert>
+	<select id="getActorById" parameterType="java.lang.Integer" resultType="Actor">
+		select * from actor where actor_id = #{id}
+	</select>
+</mapper>

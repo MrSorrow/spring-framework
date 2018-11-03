@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://127.0.0.1:3306/sakila?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull" />
+		<property name="username" value="root" />
+		<property name="password" value="1234" />
+
+		<!--连接池启动时的初始值-->
+		<property name="initialSize" value="1" />
+		<!--连接池的最大活动连接数-->
+		<property name="maxTotal" value="5" />
+		<!--最大空闲值，当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放掉一部分，一致减少到maxIdel为止-->
+		<property name="maxIdle" value="2" />
+		<!--最小空闲值，当空闲的连接数少于阈值时，连接池就会预申请取一些连接，以免洪峰来时来不及申请-->
+		<property name="minIdle" value="1" />
+		<property name="defaultAutoCommit" value="true" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
+		<property name="configLocation" value="classpath:spring-mybatis-config.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!--<bean id="actorMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+		<!--<property name="mapperInterface" value="guo.ping.mybatis.IActorMapper"/>-->
+		<!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+	<!--</bean>-->
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="guo.ping.mybatis" />
+	</bean>
+</beans>

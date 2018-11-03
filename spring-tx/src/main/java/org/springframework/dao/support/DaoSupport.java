@@ -38,6 +38,11 @@ public abstract class DaoSupport implements InitializingBean {
 	protected final Log logger = LogFactory.getLog(getClass());
 
 
+	/**
+	 * 实现InitializingBean的接口，调用子类实现的checkDaoConfig()和initDao()
+	 * @throws IllegalArgumentException
+	 * @throws BeanInitializationException
+	 */
 	@Override
 	public final void afterPropertiesSet() throws IllegalArgumentException, BeanInitializationException {
 		// Let abstract subclasses check their configuration.

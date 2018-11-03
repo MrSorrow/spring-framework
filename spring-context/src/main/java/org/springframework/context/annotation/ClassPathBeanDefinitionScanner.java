@@ -243,6 +243,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 
 	/**
+	 * 扫描包，注册
 	 * Perform a scan within the specified base packages.
 	 * @param basePackages the packages to check for annotated classes
 	 * @return number of beans registered
@@ -252,7 +253,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 		doScan(basePackages);
 
-		// Register annotation config processors, if necessary.
+		// 如果配置了includeAnnotationConfig，则注册对应注解的处理器以保证注解功能的正常使用
 		if (this.includeAnnotationConfig) {
 			AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 		}
@@ -261,6 +262,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 * 扫描basePackages下的类文件，并通过编码的方式注册到容器中
 	 * Perform a scan within the specified base packages,
 	 * returning the registered bean definitions.
 	 * <p>This method does <i>not</i> register an annotation config processor
@@ -270,21 +272,30 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+		// 用于存储返回结果的集合
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
+
+		// 遍历所有的basePackage
 		for (String basePackage : basePackages) {
+			// 扫描basePackage路径下的java文件获得所有候选的BeanDefinition
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+			// 遍历筛选所有候选的BeanDefinition
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
+				// 生成beanName的名字
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 				if (candidate instanceof AnnotatedBeanDefinition) {
+					// 如果是AnnotatedBeanDefinition类型的bean，需要检测下常用注解如：Primary、Lazy等
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				// 检测当前bean是否已经被注册
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
+					// 如果当前bean是用于生成代理的bean那么需要进一步处理
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);

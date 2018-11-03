@@ -1095,6 +1095,7 @@ public abstract class StringUtils {
 	}
 
 	/**
+	 * 将指定的字符串按照分隔符分割成字符数组
 	 * Tokenize the given {@code String} into a {@code String} array via a
 	 * {@link StringTokenizer}.
 	 * <p>Trims tokens and omits empty tokens.

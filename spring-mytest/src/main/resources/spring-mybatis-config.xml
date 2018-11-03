@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!--定义guo.ping.mybatis.Actor的别名，mapper文件中发挥作用-->
+	<typeAliases>
+		<typeAlias type="guo.ping.mybatis.Actor" alias="Actor" />
+	</typeAliases>
+	<!--定义mapper文件路径-->
+	<mappers>
+		<mapper resource="guo/ping/mybatis/ActorMapper.xml" />
+	</mappers>
+</configuration>
