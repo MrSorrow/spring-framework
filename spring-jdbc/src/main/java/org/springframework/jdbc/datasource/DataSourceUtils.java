@@ -183,12 +183,13 @@ public abstract class DataSourceUtils {
 
 		Assert.notNull(con, "No Connection specified");
 
-		// Set read-only flag.
+		// 如果事务属性中是只读，那么利用connection设置设置只读
 		if (definition != null && definition.isReadOnly()) {
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Setting JDBC Connection [" + con + "] read-only");
 				}
+				// 设置数据库连接的readOnly为true
 				con.setReadOnly(true);
 			}
 			catch (SQLException | RuntimeException ex) {
@@ -205,7 +206,7 @@ public abstract class DataSourceUtils {
 			}
 		}
 
-		// Apply specific isolation level, if any.
+		// 根据事务属性配置隔离级别
 		Integer previousIsolationLevel = null;
 		if (definition != null && definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
 			if (logger.isDebugEnabled()) {

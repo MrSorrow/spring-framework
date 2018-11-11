@@ -35,9 +35,12 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 
 	@Override
 	public boolean matches(Method method, Class<?> targetClass) {
+		// 判断targetClass是否是TransactionalProxy的子类或者子接口，是的话直接返回false
 		if (TransactionalProxy.class.isAssignableFrom(targetClass)) {
 			return false;
 		}
+		// 调用子类的getTransactionAttributeSource()方法
+		// 其实在构造BeanFactoryTransactionAttributeSourceAdvisor时进行了重写，返回BeanFactoryTransactionAttributeSourceAdvisor的annotationTransactionAttributeSource
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}

@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd
+	   					   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://127.0.0.1:3306/sakila" />
+		<property name="username" value="root" />
+		<property name="password" value="1234" />
+
+		<!--连接池启动时的初始值-->
+		<property name="initialSize" value="1" />
+		<!--连接池的最大活动连接数-->
+		<property name="maxTotal" value="5" />
+		<!--最大空闲值，当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放掉一部分，一致减少到maxIdel为止-->
+		<property name="maxIdle" value="2" />
+		<!--最小空闲值，当空闲的连接数少于阈值时，连接池就会预申请取一些连接，以免洪峰来时来不及申请-->
+		<property name="minIdle" value="1" />
+	</bean>
+
+	<!--配置业务bean-->
+	<bean id="actorService" class="guo.ping.transaction.ActorServiceImpl">
+		<!--向属性中注入数据源-->
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+</beans>

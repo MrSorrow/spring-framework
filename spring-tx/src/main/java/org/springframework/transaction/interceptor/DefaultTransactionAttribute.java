@@ -116,6 +116,7 @@ public class DefaultTransactionAttribute extends DefaultTransactionDefinition im
 	}
 
 	/**
+	 * Spring默认仅对于发生RuntimeException或Error的事务进行回滚
 	 * The default behavior is as with EJB: rollback on unchecked exception
 	 * ({@link RuntimeException}), assuming an unexpected outcome outside of any
 	 * business rules. Additionally, we also attempt to rollback on {@link Error} which

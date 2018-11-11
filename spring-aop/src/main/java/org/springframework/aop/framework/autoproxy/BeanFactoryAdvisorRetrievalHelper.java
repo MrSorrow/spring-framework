@@ -59,7 +59,7 @@ public class BeanFactoryAdvisorRetrievalHelper {
 
 
 	/**
-	 * 从XML配置文件中获取增强
+	 * 从容器中获取增强（class为Advisor类型的beanDefinition，然后通过beanFactory的getBean方法转换成对象返回）
 	 * Find all eligible Advisor beans in the current bean factory,
 	 * ignoring FactoryBeans and excluding beans that are currently in creation.
 	 * @return the list of {@link org.springframework.aop.Advisor} beans

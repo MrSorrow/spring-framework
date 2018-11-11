@@ -129,12 +129,22 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	}
 
 
+	/**
+	 * 寻找方法上是否存在事务声明
+	 * @param method the method to retrieve the attribute for
+	 * @return
+	 */
 	@Override
 	@Nullable
 	protected TransactionAttribute findTransactionAttribute(Method method) {
 		return determineTransactionAttribute(method);
 	}
 
+	/**
+	 * 寻找类或接口是否存在事务声明
+	 * @param clazz the class to retrieve the attribute for
+	 * @return
+	 */
 	@Override
 	@Nullable
 	protected TransactionAttribute findTransactionAttribute(Class<?> clazz) {

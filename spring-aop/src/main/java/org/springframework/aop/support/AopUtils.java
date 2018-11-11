@@ -230,7 +230,8 @@ public abstract class AopUtils {
 
 		// 然后继续寻找匹配类中哪个方法
 
-		// pc.getMethodMatcher()和pc.getClassFilter()一样都能够获得切点表达式，然后去匹配
+		// [AOP分析]pc.getMethodMatcher()和pc.getClassFilter()一样都能够获得切点表达式，然后去匹配
+		// [事务分析]pc.getMethodMatcher()返回的还是自身(this)-->TransactionAttributeSourcePointcut
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
@@ -243,7 +244,8 @@ public abstract class AopUtils {
 		}
 
 		Set<Class<?>> classes = new LinkedHashSet<>();
-		// 如果是代理类，则需要返回原始类
+
+		// 添加JDK的动态代理类的原始接口，或者CGLIB的代理的原始类，本身是原始的也直接添加
 		if (!Proxy.isProxyClass(targetClass)) {
 			classes.add(ClassUtils.getUserClass(targetClass));
 		}
@@ -252,7 +254,7 @@ public abstract class AopUtils {
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 
-			// 遍历类中的所有方法
+			// 遍历类中的所有方法，查看是否匹配
 			for (Method method : methods) {
 				if (introductionAwareMethodMatcher != null ?
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
