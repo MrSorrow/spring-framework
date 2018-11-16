@@ -613,6 +613,9 @@ public abstract class AbstractMessageListenerContainer extends AbstractJmsListen
 		return this.acceptMessagesWhileStopping;
 	}
 
+	/**
+	 * 实现AbstractJmsListeningContainer的模板方法，对destination判空
+	 */
 	@Override
 	protected void validateConfiguration() {
 		if (this.destination == null) {
@@ -650,6 +653,7 @@ public abstract class AbstractMessageListenerContainer extends AbstractJmsListen
 	}
 
 	/**
+	 * 激活自定义监听器，将接收到的消息传给自定义监听器
 	 * Execute the specified listener,
 	 * committing or rolling back the transaction afterwards (if necessary).
 	 * @param session the JMS Session to operate on

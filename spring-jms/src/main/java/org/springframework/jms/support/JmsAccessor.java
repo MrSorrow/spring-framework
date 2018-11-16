@@ -163,8 +163,12 @@ public abstract class JmsAccessor implements InitializingBean {
 		return this.sessionAcknowledgeMode;
 	}
 
+	/**
+	 * 实现InitializingBean接口
+	 */
 	@Override
 	public void afterPropertiesSet() {
+		// 对ConnectionFactory判空
 		if (getConnectionFactory() == null) {
 			throw new IllegalArgumentException("Property 'connectionFactory' is required");
 		}

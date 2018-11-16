@@ -422,6 +422,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * 返回DefaultLifecycleProcessor
 	 * Return the internal LifecycleProcessor used by the context.
 	 * @return the internal LifecycleProcessor (never {@code null})
 	 * @throws IllegalStateException if the context has not been initialized yet

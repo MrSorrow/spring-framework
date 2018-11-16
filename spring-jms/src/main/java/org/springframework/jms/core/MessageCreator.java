@@ -39,6 +39,7 @@ import javax.jms.Session;
 public interface MessageCreator {
 
 	/**
+	 * 利用session创建一个Message
 	 * Create a {@link Message} to be sent.
 	 * @param session the JMS {@link Session} to be used to create the
 	 * {@code Message} (never {@code null})

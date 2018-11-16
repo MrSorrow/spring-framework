@@ -488,11 +488,15 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 		Connection conToClose = null;
 		Session sessionToClose = null;
 		try {
+			// 尝试获取session
 			Session sessionToUse = ConnectionFactoryUtils.doGetTransactionalSession(
 					obtainConnectionFactory(), this.transactionalResourceFactory, startConnection);
 			if (sessionToUse == null) {
+				// 创建connection
 				conToClose = createConnection();
+				// 根据connection创建session
 				sessionToClose = createSession(conToClose);
+				// 是否开启向服务器推送连接信息，只有接收信息时需要，发送不需要
 				if (startConnection) {
 					conToClose.start();
 				}
@@ -501,13 +505,16 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing callback on JMS Session: " + sessionToUse);
 			}
+			// 调用回调方法
 			return action.doInJms(sessionToUse);
 		}
 		catch (JMSException ex) {
 			throw convertJmsAccessException(ex);
 		}
 		finally {
+			// 关闭连接
 			JmsUtils.closeSession(sessionToClose);
+			// 释放连接
 			ConnectionFactoryUtils.releaseConnection(conToClose, getConnectionFactory(), startConnection);
 		}
 	}
@@ -571,6 +578,12 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 		}
 	}
 
+	/**
+	 * 发送消息
+	 * @param destination the destination to send this message to
+	 * @param messageCreator callback to create a message
+	 * @throws JmsException
+	 */
 	@Override
 	public void send(final Destination destination, final MessageCreator messageCreator) throws JmsException {
 		execute(session -> {
@@ -589,6 +602,7 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 	}
 
 	/**
+	 * 发送JMS消息
 	 * Send the given JMS message.
 	 * @param session the JMS Session to operate on
 	 * @param destination the JMS Destination to send to
@@ -599,12 +613,15 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 			throws JMSException {
 
 		Assert.notNull(messageCreator, "MessageCreator must not be null");
+		// 根据destination创建MessageProducer(通用方法)
 		MessageProducer producer = createProducer(session, destination);
 		try {
+			// 创建消息内容(个性化内容需要调用用户自己实现的方法)
 			Message message = messageCreator.createMessage(session);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Sending created message: " + message);
 			}
+			// 利用MessageProducer发送消息
 			doSend(producer, message);
 			// Check commit - avoid commit call within a JTA transaction.
 			if (session.getTransacted() && isSessionLocallyTransacted(session)) {
@@ -711,6 +728,12 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 		}
 	}
 
+	/**
+	 * 接收消息
+	 * @param destination the destination to receive a message from
+	 * @return
+	 * @throws JmsException
+	 */
 	@Override
 	@Nullable
 	public Message receive(Destination destination) throws JmsException {
@@ -751,6 +774,7 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 	}
 
 	/**
+	 * 接收JMS消息
 	 * Receive a JMS message.
 	 * @param session the JMS Session to operate on
 	 * @param destination the JMS Destination to receive from
@@ -766,6 +790,7 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 	}
 
 	/**
+	 * 接收JMS消息
 	 * Actually receive a JMS message.
 	 * @param session the JMS Session to operate on
 	 * @param consumer the JMS MessageConsumer to receive with
@@ -777,14 +802,17 @@ public class JmsTemplate extends JmsDestinationAccessor implements JmsOperations
 		try {
 			// Use transaction timeout (if available).
 			long timeout = getReceiveTimeout();
+			// 获取connectionFactory
 			ConnectionFactory connectionFactory = getConnectionFactory();
 			JmsResourceHolder resourceHolder = null;
+			// 从connectionFactory中获取连接，并包装成JmsResourceHolder返回
 			if (connectionFactory != null) {
 				resourceHolder = (JmsResourceHolder) TransactionSynchronizationManager.getResource(connectionFactory);
 			}
 			if (resourceHolder != null && resourceHolder.hasTimeout()) {
 				timeout = Math.min(timeout, resourceHolder.getTimeToLiveInMillis());
 			}
+			// 接收消息
 			Message message = receiveFromConsumer(consumer, timeout);
 			if (session.getTransacted()) {
 				// Commit necessary - but avoid commit call within a JTA transaction.

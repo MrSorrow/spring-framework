@@ -80,8 +80,14 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 
 	private boolean active = false;
 
+	/**
+	 * 标志位用来控制接收消息的暂停与恢复
+	 */
 	private volatile boolean running = false;
 
+	/**
+	 * 存储暂停的任务
+	 */
 	private final List<Object> pausedTasks = new LinkedList<>();
 
 	protected final Object lifecycleMonitor = new Object();
@@ -158,16 +164,21 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 
 
 	/**
+	 * 实现自InitializingBean接口
 	 * Delegates to {@link #validateConfiguration()} and {@link #initialize()}.
 	 */
 	@Override
 	public void afterPropertiesSet() {
+		// 父类对connectionFactory判空
 		super.afterPropertiesSet();
+		// 验证配置文件
 		validateConfiguration();
+		// 初始化容器
 		initialize();
 	}
 
 	/**
+	 * 模板方法
 	 * Validate the configuration of this container.
 	 * <p>The default implementation is empty. To be overridden in subclasses.
 	 */
@@ -189,6 +200,7 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	//-------------------------------------------------------------------------
 
 	/**
+	 * 初始化容器
 	 * Initialize this container.
 	 * <p>Creates a JMS Connection, starts the {@link javax.jms.Connection}
 	 * (if {@link #setAutoStartup(boolean) "autoStartup"} hasn't been turned off),
@@ -197,7 +209,9 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	 */
 	public void initialize() throws JmsException {
 		try {
+			// lifecycleMonitor用于控制生命周期的同步处理
 			synchronized (this.lifecycleMonitor) {
+				// 将active置为true
 				this.active = true;
 				this.lifecycleMonitor.notifyAll();
 			}
@@ -266,6 +280,7 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 	}
 
 	/**
+	 * 启动任务执行器执行任务
 	 * Start this container.
 	 * @throws JmsException if starting failed
 	 * @see #doStart
@@ -547,6 +562,7 @@ public abstract class AbstractJmsListeningContainer extends JmsDestinationAccess
 				for (Iterator<?> it = this.pausedTasks.iterator(); it.hasNext();) {
 					Object task = it.next();
 					try {
+						// 执行任务
 						doRescheduleTask(task);
 						it.remove();
 						if (logger.isDebugEnabled()) {
