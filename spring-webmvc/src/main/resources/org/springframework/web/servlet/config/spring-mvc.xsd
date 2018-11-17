@@ -14,7 +14,7 @@
 	<xsd:element name="annotation-driven">
 		<xsd:annotation>
 			<xsd:documentation source="java:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"><![CDATA[
-	Configures the annotation-driven Spring MVC Controller programming model.
+	Configures the annotation-driven Spring MVC Controller programming guo.ping.mvctest.model.
 	Note that this tag works in Web MVC only, not in Portlet MVC!
 
 	See org.springframework.web.servlet.config.annotation.EnableWebMvc javadoc for details
@@ -26,7 +26,7 @@
 				<xsd:element name="path-matching" minOccurs="0">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-	Configures the path matching part of the Spring MVC Controller programming model.
+	Configures the path matching part of the Spring MVC Controller programming guo.ping.mvctest.model.
 	Like annotation-driven, code-based alternatives are also documented in EnableWebMvc javadoc.
 						]]></xsd:documentation>
 					</xsd:annotation>
