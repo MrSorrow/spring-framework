@@ -362,10 +362,13 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 根据request获取对应的handler(Controller),这一步返回的是处理器执行链
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
+			// 如果没有对应request的handler则使用默认的handler
 			handler = getDefaultHandler();
 		}
+		// 如果也没有提供默认的handler则无法继续处理返回null
 		if (handler == null) {
 			return null;
 		}
@@ -375,6 +378,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		// 向处理器执行链中添加拦截器
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 
 		if (logger.isTraceEnabled()) {
@@ -384,6 +388,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			logger.debug("Mapped to " + executionChain.getHandler());
 		}
 
+		// 跨域相关
 		if (CorsUtils.isCorsRequest(request)) {
 			CorsConfiguration globalConfig = this.globalCorsConfigSource.getCorsConfiguration(request);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);
@@ -414,6 +419,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	protected abstract Object getHandlerInternal(HttpServletRequest request) throws Exception;
 
 	/**
+	 * 获取处理器执行链，将配置中的对应拦截器加入到执行链中，保证这些拦截器可以有效的作用于目标对象
 	 * Build a {@link HandlerExecutionChain} for the given handler, including
 	 * applicable interceptors.
 	 * <p>The default implementation builds a standard {@link HandlerExecutionChain}
@@ -434,10 +440,14 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @see #getAdaptedInterceptors()
 	 */
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
+		// 先对上一步返回的结果类型进行强转为HandlerExecutionChain
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
 				(HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
 
+		// 截取用于匹配的url有效路径
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
+
+		// 将this.adaptedInterceptors中与请求url有效路径匹配的的拦截器添加到执行链中
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
 			if (interceptor instanceof MappedInterceptor) {
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;

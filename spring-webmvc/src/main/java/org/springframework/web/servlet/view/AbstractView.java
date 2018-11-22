@@ -296,6 +296,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 
 
 	/**
+	 * 页面跳转
 	 * Prepares the view given the specified model, merging it with static
 	 * attributes and a RequestContext attribute, if necessary.
 	 * Delegates to renderMergedOutputModel for the actual rendering.
@@ -311,8 +312,11 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 					(this.staticAttributes.isEmpty() ? "" : ", static attributes " + this.staticAttributes));
 		}
 
+		// 解析属性包装成map对象，后面会设置到request中
 		Map<String, Object> mergedModel = createMergedOutputModel(model, request, response);
+		// 准备response
 		prepareResponse(request, response);
+		// 处理页面跳转
 		renderMergedOutputModel(mergedModel, getRequestToExpose(request), response);
 	}
 
@@ -332,6 +336,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 		size += (model != null ? model.size() : 0);
 		size += (pathVars != null ? pathVars.size() : 0);
 
+		// 定义存储属性的map
 		Map<String, Object> mergedModel = new LinkedHashMap<>(size);
 		mergedModel.putAll(this.staticAttributes);
 		if (pathVars != null) {
@@ -430,6 +435,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 
 
 	/**
+	 * 将model中的数据以属性的方式设置到request中
 	 * Expose the model objects in the given map as request attributes.
 	 * Names will be taken from the model Map.
 	 * This method is suitable for all resources reachable by {@link javax.servlet.RequestDispatcher}.

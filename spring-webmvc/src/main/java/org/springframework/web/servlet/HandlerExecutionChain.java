@@ -123,6 +123,7 @@ public class HandlerExecutionChain {
 
 
 	/**
+	 * 调用拦截器执行链中所有的拦截器的preHandler方法
 	 * Apply preHandle methods of registered interceptors.
 	 * @return {@code true} if the execution chain should proceed with the
 	 * next interceptor or the handler itself. Else, DispatcherServlet assumes
@@ -134,6 +135,7 @@ public class HandlerExecutionChain {
 			for (int i = 0; i < interceptors.length; i++) {
 				HandlerInterceptor interceptor = interceptors[i];
 				if (!interceptor.preHandle(request, response, this.handler)) {
+					// 如果拦截器执行到这里，说明其中有拦截器的preHandle方法返回为true，导致applyPreHandle返回为false
 					triggerAfterCompletion(request, response, null);
 					return false;
 				}

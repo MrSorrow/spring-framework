@@ -233,6 +233,7 @@ public class ServletWebRequest extends ServletRequestAttributes implements Nativ
 
 		boolean validated = validateIfNoneMatch(etag);
 		if (!validated) {
+			// 比较If-Modified-Since和lastModifiedTimestamp
 			validateIfModifiedSince(lastModifiedTimestamp);
 		}
 
@@ -245,6 +246,7 @@ public class ServletWebRequest extends ServletRequestAttributes implements Nativ
 			}
 			if (isHttpGetOrHead) {
 				if (lastModifiedTimestamp > 0 && parseDateValue(response.getHeader(LAST_MODIFIED)) == -1) {
+					// 更新Last-Modified为最新的更新时间
 					response.setDateHeader(LAST_MODIFIED, lastModifiedTimestamp);
 				}
 				if (StringUtils.hasLength(etag) && response.getHeader(ETAG) == null) {
@@ -321,7 +323,7 @@ public class ServletWebRequest extends ServletRequestAttributes implements Nativ
 		if (ifModifiedSince == -1) {
 			return false;
 		}
-		// We will perform this validation...
+		// 如果当前请求中的If-Modified-Since时间晚于服务器时间，则认为是最新的，直接使用缓存
 		this.notModified = ifModifiedSince >= (lastModifiedTimestamp / 1000 * 1000);
 		return true;
 	}

@@ -455,6 +455,7 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	}
 
 	/**
+	 * 创建视图并加入缓存
 	 * Overridden to implement check for "redirect:" prefix.
 	 * <p>Not possible in {@code loadView}, since overridden
 	 * {@code loadView} versions in subclasses might rely on the
@@ -464,13 +465,12 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	 */
 	@Override
 	protected View createView(String viewName, Locale locale) throws Exception {
-		// If this resolver is not supposed to handle the given view,
-		// return null to pass on to the next resolver in the chain.
+		// 如果当前解析器不能解析，直接返回null等下一个
 		if (!canHandle(viewName, locale)) {
 			return null;
 		}
 
-		// Check for special "redirect:" prefix.
+		// 处理前缀为redirect:xxx的情况
 		if (viewName.startsWith(REDIRECT_URL_PREFIX)) {
 			String redirectUrl = viewName.substring(REDIRECT_URL_PREFIX.length());
 			RedirectView view = new RedirectView(redirectUrl,
@@ -482,14 +482,14 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 			return applyLifecycleMethods(REDIRECT_URL_PREFIX, view);
 		}
 
-		// Check for special "forward:" prefix.
+		// 处理前缀为forward:xxx的情况
 		if (viewName.startsWith(FORWARD_URL_PREFIX)) {
 			String forwardUrl = viewName.substring(FORWARD_URL_PREFIX.length());
 			InternalResourceView view = new InternalResourceView(forwardUrl);
 			return applyLifecycleMethods(FORWARD_URL_PREFIX, view);
 		}
 
-		// Else fall back to superclass implementation: calling loadView.
+		// 正常的话调用父类的创建视图方法
 		return super.createView(viewName, locale);
 	}
 
@@ -509,6 +509,7 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	}
 
 	/**
+	 * 创建一个新的视图
 	 * Delegates to {@code buildView} for creating a new instance of the
 	 * specified view class. Applies the following Spring lifecycle methods
 	 * (as supported by the generic Spring bean factory):
@@ -526,6 +527,7 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	@Override
 	protected View loadView(String viewName, Locale locale) throws Exception {
 		AbstractUrlBasedView view = buildView(viewName);
+		// 调用Spring中beanFactory中的初始化方法对view进行初始化
 		View result = applyLifecycleMethods(viewName, view);
 		return (view.checkResource(locale) ? result : null);
 	}
@@ -548,11 +550,14 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 		Class<?> viewClass = getViewClass();
 		Assert.state(viewClass != null, "No view class");
 
+		// 反射实例化view
 		AbstractUrlBasedView view = (AbstractUrlBasedView) BeanUtils.instantiateClass(viewClass);
+		// 添加前缀以及后缀
 		view.setUrl(getPrefix() + viewName + getSuffix());
 
 		String contentType = getContentType();
 		if (contentType != null) {
+			// 设置contentType
 			view.setContentType(contentType);
 		}
 

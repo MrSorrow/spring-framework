@@ -284,10 +284,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
-			// Check if bean definition exists in this factory.
+			// 查看其父容器是否存在，这就决定了Spring父子容器的可见特性
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 
-			// 如果beanDefinitionMap中也就是已经加载的类中不包括beanName则尝试从parentBeanFactory中检测
+			// 如果beanDefinitionMap中也就是已经加载的类中不包括beanName则尝试从父容器parentBeanFactory中检测
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
 				String nameToLookup = originalBeanName(name);

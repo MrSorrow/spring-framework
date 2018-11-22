@@ -149,6 +149,13 @@ public abstract class AbstractController extends WebContentGenerator implements 
 	}
 
 
+	/**
+	 * 处理请求返回视图
+	 * @param request current HTTP request
+	 * @param response current HTTP response
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	@Nullable
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response)
@@ -163,17 +170,19 @@ public abstract class AbstractController extends WebContentGenerator implements 
 		checkRequest(request);
 		prepareResponse(response);
 
-		// Execute handleRequestInternal in synchronized block if required.
+		// 如果需要session内的同步执行
 		if (this.synchronizeOnSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
 				Object mutex = WebUtils.getSessionMutex(session);
 				synchronized (mutex) {
+					// 抽象方法，也就是我们的Controller对应要实现的方法，包含我们的处理逻辑
 					return handleRequestInternal(request, response);
 				}
 			}
 		}
 
+		// 抽象方法，也就是我们的Controller对应要实现的方法，包含我们的处理逻辑
 		return handleRequestInternal(request, response);
 	}
 

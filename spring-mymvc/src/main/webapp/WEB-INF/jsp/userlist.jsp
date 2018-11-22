@@ -5,3 +5,4 @@
     　 <c:out value="${user.username}"/><br/>
     　 <c:out value="${user.age}"/><br/>
 </c:forEach>
+请求时间：${handingTime}

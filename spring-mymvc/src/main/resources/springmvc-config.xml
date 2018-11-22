@@ -7,10 +7,19 @@
         <property name="mappings">
             <props>
                 <prop key="/userlist">userController</prop>
+				<prop key="/modify">modifyController</prop>
             </props>
         </property>
+		<property name="interceptors">
+			<list>
+				<ref bean="countTimeInterceptor" />
+			</list>
+		</property>
     </bean>
 
+	<bean id="countTimeInterceptor" class="guo.ping.mvctest.interceptor.CountTimeInterceptor" />
+
     <bean id="userController" class="guo.ping.mvctest.controller.UserController" />
+	<bean id="modifyController" class="guo.ping.mvctest.controller.ModifyController" />
 
 </beans>

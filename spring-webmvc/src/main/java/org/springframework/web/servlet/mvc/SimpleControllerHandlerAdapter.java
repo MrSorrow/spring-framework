@@ -39,21 +39,44 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class SimpleControllerHandlerAdapter implements HandlerAdapter {
 
+	/**
+	 * 判断该处理器适配器是否适合该请求，标准是handler是Controller即可
+	 * @param handler handler object to check
+	 * @return
+	 */
 	@Override
 	public boolean supports(Object handler) {
 		return (handler instanceof Controller);
 	}
 
+	/**
+	 * 处理请求，返回视图
+	 * @param request current HTTP request
+	 * @param response current HTTP response
+	 * @param handler handler to use. This object must have previously been passed
+	 * to the {@code supports} method of this interface, which must have
+	 * returned {@code true}.
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	@Nullable
 	public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
+		// 委托具体的Controller的handleRequest方法
 		return ((Controller) handler).handleRequest(request, response);
 	}
 
+	/**
+	 * 获取上一次服务器端内容更新时间
+	 * @param request current HTTP request
+	 * @param handler handler to use
+	 * @return
+	 */
 	@Override
 	public long getLastModified(HttpServletRequest request, Object handler) {
+		// 所以需要实现LastModified接口，因为这一步会判断
 		if (handler instanceof LastModified) {
 			return ((LastModified) handler).getLastModified(request);
 		}
