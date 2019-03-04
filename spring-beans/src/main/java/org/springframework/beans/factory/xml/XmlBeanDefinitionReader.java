@@ -525,7 +525,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
 		// 利用DefaultBeanDefinitionDocumentReader实例化BeanDefinitionDocumentReader
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
-		// 记录统计前BeanDefinition的个数
+		// 记录统计前BeanDefinition的个数，beanDefinitionMap的size
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		// 加载注册bean，所以这个就是真正实现的方法了...吗?
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
