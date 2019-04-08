@@ -76,8 +76,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** 用于保存BeanName和创建bean的工厂之间的关系 Cache of singleton factories: bean name to ObjectFactory. */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** 也是保存BeanName和创建bean实例之间的关系，与singletonObjects不同之处在于，当一个单例bean被放在里面后，
-	 * 那么bean还在创建过程中，就可以通过getBean方法获取到了，其目的是用来循环检测引用
+	/** 存放的是【早期】的单例 bean 的映射，它与 {@link #singletonObjects} 的区别区别在，于 earlySingletonObjects 中存放的 bean 不一定是完整的。
+	 * 从 {@link #getSingleton(String)} 方法中，中我们可以了解，bean 在创建过程中就已经加入到 earlySingletonObjects 中了，所以当在 bean 的创建过程中就可以通过 getBean() 方法获取。这个 Map 也是解决【循环依赖】的关键所在。
 	 * Cache of early singleton objects: bean name to bean instance. */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
@@ -189,20 +189,20 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
-		// 检查缓存中是否存在实例
+		// 检查一级缓存singletonObject中是否存在实例
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
-			// 如果缓存中不存在，则锁定全局变量并进行处理
+			// 如果一级缓存中不存在，则锁定全局变量并进行处理
 			synchronized (this.singletonObjects) {
-				// 如果此bean正在加载则不处理
+				// 从二级缓存中进行查找
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
-					// 当某些方法需要提前初始化的时候则会调用addSingletonFactory方法将对应的ObjectFactory初始化策略存储在singletonFactories
+					// 当某些方法需要提前初始化的时候则会调用addSingletonFactory方法将对应的ObjectFactory初始化策略存储在三级缓存singletonFactories
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
-						// 如果singletonFactory中存在，调用预先设定的getObject方法
+						// 如果singletonFactory中存在，调用预先设定的getObject方法获取bean
 						singletonObject = singletonFactory.getObject();
-						// 记录在缓存中，earlySingletonObjects和singletonFactories互斥
+						// 记录在二级缓存中，三级缓存删除，earlySingletonObjects和singletonFactories互斥
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
@@ -213,7 +213,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
-	 * 缓存中没有需要新创建单例初始状态的bean
+	 * 缓存中没有，需要新创建单例初始状态的bean
 	 * Return the (raw) singleton object registered under the given name,
 	 * creating and registering a new one if none registered yet.
 	 * @param beanName the name of the bean

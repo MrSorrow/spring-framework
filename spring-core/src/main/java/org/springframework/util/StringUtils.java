@@ -647,7 +647,7 @@ public abstract class StringUtils {
 		int prefixIndex = pathToUse.indexOf(':');
 		String prefix = "";
 		if (prefixIndex != -1) {
-			prefix = pathToUse.substring(0, prefixIndex + 1);
+			prefix = pathToUse.substring(0, prefixIndex + 1);  // 盘符
 			if (prefix.contains(FOLDER_SEPARATOR)) {
 				prefix = "";
 			}

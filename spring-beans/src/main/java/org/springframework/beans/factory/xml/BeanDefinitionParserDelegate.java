@@ -439,11 +439,11 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		if (containingBean == null) {
-			// 检验bean是否已经被用，没有重复则保存bean的名称与别名
+			// 检验bean定义的名称与别名是否已经被用，没有重复则保存usedNames的HashSet中
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
-		// 2、进一步解析其他所有属性
+		// 2、进一步解析其他所有属性，返回GenericBeanDefinition
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
 			// 3、如果id和name属性都没有指定，则Spring会自行创建beanName以及指定别名
@@ -531,7 +531,7 @@ public class BeanDefinitionParserDelegate {
 			// 创建用于承载属性的AbstractBeanDefinition类型的GenericBeanDefinition对象，创建随后立刻保存class和parent属性
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
-			// 硬编码解析默认bean的各种属性
+			// 硬编码解析默认bean的剩余各种属性
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 
 			// 设置描述 内容来自description子元素
@@ -860,7 +860,7 @@ public class BeanDefinitionParserDelegate {
 							error("Ambiguous constructor-arg entries for index " + index, ele);
 						}
 						else {
-							// 保存信息至bd的constructorArgumentValues
+							// 保存信息至bd的constructorArgumentValues的indexedArgumentValues属性中
 							bd.getConstructorArgumentValues().addIndexedArgumentValue(index, valueHolder);
 						}
 					}
@@ -878,6 +878,7 @@ public class BeanDefinitionParserDelegate {
 			try {
 				this.parseState.push(new ConstructorArgumentEntry());
 				Object value = parsePropertyValue(ele, bd, null);
+				// 创建ValueHolder对象保存constructor-arg信息
 				ConstructorArgumentValues.ValueHolder valueHolder = new ConstructorArgumentValues.ValueHolder(value);
 				if (StringUtils.hasLength(typeAttr)) {
 					valueHolder.setType(typeAttr);
@@ -886,6 +887,7 @@ public class BeanDefinitionParserDelegate {
 					valueHolder.setName(nameAttr);
 				}
 				valueHolder.setSource(extractSource(ele));
+				// 保存信息至bd的constructorArgumentValues的genericArgumentValues属性中
 				bd.getConstructorArgumentValues().addGenericArgumentValue(valueHolder);
 			}
 			finally {
@@ -1472,7 +1474,7 @@ public class BeanDefinitionParserDelegate {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
-		// 调用NameSpaceHandler的进行解析
+		// 调用自定义的NameSpaceHandler进行解析
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

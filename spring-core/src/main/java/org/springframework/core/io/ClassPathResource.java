@@ -163,7 +163,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	}
 
 	/**
-	 * 实现InputStreamSource接口的方法
+	 * 实现InputStreamSource接口的方法，会被XmlBeanDefinitionReader进行调用
 	 * 通过class或者classLoader提供的底层方法进行调用
 	 * This implementation opens an InputStream for the given class path resource.
 	 * @see java.lang.ClassLoader#getResourceAsStream(String)

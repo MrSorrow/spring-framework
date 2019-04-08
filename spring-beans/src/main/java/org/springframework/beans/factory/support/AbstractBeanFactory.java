@@ -246,7 +246,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
-		// 提取对应的bean名称
+		// 提取对应的bean名称(返回 bean 名称，剥离工厂引用前缀; 如果 name 是 alias ，则获取对应映射的 beanName)
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
@@ -256,7 +256,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Spring创建bean的原则是不等bean创建完成就会将创建bean的ObjectFactory提早曝光
 		// 也就是将ObjectFactory加入到缓存中，一旦下个bean创建的时候需要依赖上个bean则直接使用ObjectFactory
 
-		// 直接尝试从缓存中获取或者singletonFactories中的ObjectFactory中获取
+		// 直接尝试从三级缓存中获取出对象（可能是第三级缓存singletonFactories中的ObjectFactory中获取）
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
@@ -269,6 +269,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 			// 如果从缓存中得到了bean的原始状态，则需要对bean进行实例化。有时候存在诸如BeanFactory的情况并不是直接返回实例本身而是返回指定方法返回的实例
+			// 完成 FactoryBean 的相关处理，并用来获取 FactoryBean 的处理结果
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -279,7 +280,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// 对于B的创建再次返回到创建A，造成循环依赖，也就是下面的情况。对于“prototype”作用域Bean，Spring容器无法完成依赖注入，
 			// 因为“prototype”作用域的Bean，Spring容器不进行缓存，因此无法提前暴露一个创建中的Bean。
 			// 参考：http://www.cnblogs.com/bhlsheji/p/5208076.html
-			// isPrototypeCurrentlyInCreation(beanName)为true
+			// isPrototypeCurrentlyInCreation(beanName) 原型模式依赖检查
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -306,7 +307,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
-			// 如果不仅仅是做类型检查则是创建bean，这里要进行记录
+			// 如果不仅仅是做类型检查则是创建bean，这里要Bean标记为已经创建或即将创建
 			if (!typeCheckOnly) {
 				markBeanAsCreated(beanName);
 			}
@@ -318,17 +319,18 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Guarantee initialization of beans that the current bean depends on.
 				String[] dependsOn = mbd.getDependsOn();
-				// 若存在依赖则需要递归实例化依赖的bean
+				// 若存在依赖则需要递归实例化依赖的bean，这里的依赖指的是xml配置的depends-on
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
+						// beanName的bean依赖了dep的bean，如果dep的bean又依赖beanName的bean，则直接循环依赖无法解决
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
-						// 缓存依赖调用
+						// 缓存依赖调用(感觉是注册beanName需要依赖的bean)
 						registerDependentBean(dep, beanName);
 						try {
-							getBean(dep);
+							getBean(dep);  // 先进行创建dep的bean，所以上面判断出的直接循环依赖无法解决
 						}
 						catch (NoSuchBeanDefinitionException ex) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
@@ -1677,7 +1679,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			return beanInstance;
 		}
 
-		// 加载FactoryBean
+		// 到这可以确定beanInstance是FactoryBean，而且需要调用getObject方法
 		Object object = null;
 		if (mbd == null) {
 			// 尝试从缓存中加载bean，如果缓存中已经存在 beanName 对应的工厂 bean 生成的对象则直接返回

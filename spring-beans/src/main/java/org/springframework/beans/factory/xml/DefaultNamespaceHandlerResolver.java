@@ -136,11 +136,11 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 					throw new FatalBeanException("Class [" + className + "] for namespace [" + namespaceUri +
 							"] does not implement the [" + NamespaceHandler.class.getName() + "] interface");
 				}
-				// 初始化类
+				// 反射创建一个命名空间处理对象
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
 				// 调用自定义NamespaceHandler的初始化方法
 				namespaceHandler.init();
-				// 记录在handlerMappings缓存中
+				// 将命名空间处理对象记录在handlerMappings缓存中，省着下一次用到继续解析实例化，也相当于单例了
 				handlerMappings.put(namespaceUri, namespaceHandler);
 				return namespaceHandler;
 			}

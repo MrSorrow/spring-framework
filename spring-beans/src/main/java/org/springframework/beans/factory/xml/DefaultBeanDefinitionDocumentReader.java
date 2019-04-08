@@ -226,7 +226,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 		// 是否是嵌套的<beans>标签
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
-			// recurse
+			// 递归再去
 			doRegisterBeanDefinitions(ele);
 		}
 	}
@@ -308,7 +308,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	}
 
 	/**
-	 * 解析注册默认标签<alias></alias>
+	 * 解析注册默认标签<alias name="" alias=""></alias>
 	 * Process the given alias element, registering the alias with the registry.
 	 */
 	protected void processAliasRegistration(Element ele) {
@@ -326,7 +326,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 		if (valid) {
 			try {
-				// 注册别名
+				// 注册别名，存放在aliasMap<alias, name>中
 				getReaderContext().getRegistry().registerAlias(name, alias);
 			}
 			catch (Exception ex) {

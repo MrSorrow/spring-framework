@@ -57,7 +57,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 	public void registerAlias(String name, String alias) {
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
-		synchronized (this.aliasMap) {
+		synchronized (this.aliasMap) {  // 虽然aliasMap本身是CurrentHashMap，但是为了保证下面代码块中的操作是原子的还是同步的
 			// 如果beanName与alias相同的话不记录alias，并删除对应的alias
 			if (alias.equals(name)) {
 				this.aliasMap.remove(alias);
@@ -224,6 +224,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		String canonicalName = name;
 		// Handle aliasing...
 		String resolvedName;
+		// 循环获取，直到获取的不是别名
 		do {
 			resolvedName = this.aliasMap.get(canonicalName);
 			if (resolvedName != null) {

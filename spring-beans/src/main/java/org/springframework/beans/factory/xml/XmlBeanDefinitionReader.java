@@ -110,6 +110,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 	private ProblemReporter problemReporter = new FailFastProblemReporter();
 
+	/** 注册完成beanDefinition的监听器，默认是空实现 */
 	private ReaderEventListener eventListener = new EmptyReaderEventListener();
 
 	private SourceExtractor sourceExtractor = new NullSourceExtractor();
@@ -206,7 +207,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	}
 
 	/**
-	 * Specify which {@link ReaderEventListener} to use.
+	 * 通过set方法可以指定自定义的ReaderEventListener
 	 * <p>The default implementation is EmptyReaderEventListener which discards every event notification.
 	 * External tools can provide an alternative implementation to monitor the components being
 	 * registered in the BeanFactory.
@@ -322,7 +323,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			logger.debug("Loading XML bean definitions from " + encodedResource.getResource());
 		}
 
-		// 通过属性来记录已加载的资源
+		// 通过一个ThreadLocal来记录正在加载的Resource资源，key为ThreadLocal，value为Set<EncodedResource>
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -353,6 +354,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"IOException parsing XML document from " + encodedResource.getResource(), ex);
 		}
 		finally {
+			// 加载完成后从ThreadLocal中移除当前正在加载Resource资源
 			currentResources.remove(encodedResource);
 			if (currentResources.isEmpty()) {
 				this.resourcesCurrentlyBeingLoaded.remove();

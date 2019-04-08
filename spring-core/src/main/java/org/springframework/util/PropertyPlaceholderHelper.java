@@ -129,7 +129,7 @@ public class PropertyPlaceholderHelper {
 
 		StringBuilder result = new StringBuilder(value);
 
-		int startIndex = value.indexOf(this.placeholderPrefix);
+		int startIndex = value.indexOf(this.placeholderPrefix);  // 字符串中"${"的起始位置
 		while (startIndex != -1) {
 			int endIndex = findPlaceholderEndIndex(result, startIndex);
 			if (endIndex != -1) {
