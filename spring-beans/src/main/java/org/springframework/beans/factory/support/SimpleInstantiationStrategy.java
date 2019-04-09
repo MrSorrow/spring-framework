@@ -61,8 +61,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	 * 无参实例化策略
 	 * @param bd the bean definition
 	 * @param beanName the name of the bean when it's created in this context.
-	 * The name can be {@code null} if we're autowiring a bean which doesn't
-	 * belong to the factory.
+	 * The name can be {@code null} if we're autowiring a bean which doesn't belong to the factory.
 	 * @param owner the owning BeanFactory
 	 * @return
 	 */
@@ -73,6 +72,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
+				// 再次尝试获取缓存，确认是否拥有
 				constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse == null) {
 					final Class<?> clazz = bd.getBeanClass();
@@ -85,8 +85,10 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
 						}
 						else {
+							// 获取指定参数类型的构造函数，这里是无参构造函数
 							constructorToUse =	clazz.getDeclaredConstructor();
 						}
+						// 添加进入缓存，便于下次直接使用，不再解析
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
 					}
 					catch (Throwable ex) {
@@ -97,7 +99,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
-			// Must generate CGLIB subclass.
+			// 利用Cglib进行动态代理生成子类
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
 	}

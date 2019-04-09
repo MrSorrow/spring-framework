@@ -1084,7 +1084,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 	/**
-	 * 寻找类型匹配
+	 * 寻找类型匹配的bean并返回，如果是集合类型则根据集合内的元素类型寻找所有的bean，最终返回集合对象
 	 * @param descriptor the descriptor for the dependency (field/method/constructor)
 	 * @param requestingBeanName the name of the bean which declares the given dependency
 	 * @param autowiredBeanNames a Set that all names of autowired beans (used for

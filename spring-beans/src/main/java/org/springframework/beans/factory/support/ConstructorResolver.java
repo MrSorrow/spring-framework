@@ -95,7 +95,6 @@ class ConstructorResolver {
 
 	/**
 	 * 带有参数的构造方法实例化
-	 * "autowire constructor" (with constructor arguments by type) behavior.
 	 * Also applied if explicit constructor argument values are specified,
 	 * matching all remaining arguments with beans from the bean factory.
 	 * <p>This corresponds to constructor injection: In this mode, a Spring
@@ -115,9 +114,10 @@ class ConstructorResolver {
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
+		// 保存最终需要的有参构造器和参数
 		Constructor<?> constructorToUse = null;
 		ArgumentsHolder argsHolderToUse = null;
-		Object[] argsToUse = null;
+		Object[] argsToUse = null;  // 保存最后类型正确的参数
 
 		// explicitArgs通过getBean方法传入
 		// 如果getBean方法调用的时候指定了方法参数那么直接使用
@@ -139,7 +139,7 @@ class ConstructorResolver {
 					}
 				}
 			}
-			// 如果缓存中存在
+			// 如果缓存中存在解析好的构造函数参数或者配置了构造函数参数
 			if (argsToResolve != null) {
 				// 解析参数类型，如给定方法的构造函数A(int, int)则通过此方法后就会把配置中的("1", "1")转换为(1, 1)
 				// 缓存中的值可能是原始值也可能是最终值
@@ -183,7 +183,7 @@ class ConstructorResolver {
 							"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 				}
 			}
-			// 排序给定的构造函数，public构造函数优先参数数量降序、非public构造函数参数数量降序
+			// 排序给定的构造函数，public构造函数优先 参数数量降序、非public构造函数 参数数量降序
 			AutowireUtils.sortConstructors(candidates);
 
 			int minTypeDiffWeight = Integer.MAX_VALUE;

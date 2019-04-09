@@ -246,17 +246,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
-		// 提取对应的bean名称(返回 bean 名称，剥离工厂引用前缀; 如果 name 是 alias ，则获取对应映射的 beanName)
+		// 提取对应的bean名称，返回bean名称(剥离工厂引用前缀&; 如果name是alias，则获取对应映射的beanName)
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
-		// 检查缓存中或者实例工厂中是否有对应的实例
+		// 检查三级缓存中是否有对应的实例
 		// 为什么会首先使用这段代码？
 		// 因为在创建单例bean的时候会存在依赖注入的情况，而在创建依赖的时候为了避免循环依赖
 		// Spring创建bean的原则是不等bean创建完成就会将创建bean的ObjectFactory提早曝光
 		// 也就是将ObjectFactory加入到缓存中，一旦下个bean创建的时候需要依赖上个bean则直接使用ObjectFactory
 
-		// 直接尝试从三级缓存中获取出对象（可能是第三级缓存singletonFactories中的ObjectFactory中获取）
+		// 直接尝试从三级缓存中获取出对象（对象很可能是从第三级缓存singletonFactories中的ObjectFactory中获取）
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
@@ -280,7 +280,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// 对于B的创建再次返回到创建A，造成循环依赖，也就是下面的情况。对于“prototype”作用域Bean，Spring容器无法完成依赖注入，
 			// 因为“prototype”作用域的Bean，Spring容器不进行缓存，因此无法提前暴露一个创建中的Bean。
 			// 参考：http://www.cnblogs.com/bhlsheji/p/5208076.html
-			// isPrototypeCurrentlyInCreation(beanName) 原型模式依赖检查
+			// isPrototypeCurrentlyInCreation(beanName) 原型模式依赖检查,实现方式是通过ThreadLocal来记录已经正在加载的多例beanName
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -288,9 +288,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// 查看其父容器是否存在，这就决定了Spring父子容器的可见特性
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 
-			// 如果beanDefinitionMap中也就是已经加载的类中不包括beanName则尝试从父容器parentBeanFactory中检测
+			// 如果beanDefinitionMap中也就是已经注册的beanDefinition中不包括beanName则尝试从父容器parentBeanFactory中检测
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
-				// Not found -> check parent.
+				// 子容器中没有beanName对应的beanDefinition，则在父容器中递归查找
 				String nameToLookup = originalBeanName(name);
 				if (parentBeanFactory instanceof AbstractBeanFactory) {
 					return ((AbstractBeanFactory) parentBeanFactory).doGetBean(
@@ -307,7 +307,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
-			// 如果不仅仅是做类型检查则是创建bean，这里要Bean标记为已经创建或即将创建
+			// 如果不仅仅是做类型检查，那么同时还要创建bean，所以要将Bean标记为已经创建或即将创建，用alreadyCreated（Set）记录
 			if (!typeCheckOnly) {
 				markBeanAsCreated(beanName);
 			}
@@ -327,7 +327,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
-						// 缓存依赖调用(感觉是注册beanName需要依赖的bean)
+						// 注册beanName需要依赖的bean，注册好能够用于上面isDependent(beanName, dep)检测循环依赖
 						registerDependentBean(dep, beanName);
 						try {
 							getBean(dep);  // 先进行创建dep的bean，所以上面判断出的直接循环依赖无法解决
@@ -339,13 +339,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					}
 				}
 
-				// Create bean instance.
-				// 实例化依赖的bean后便可以实例化mbd本身了
+				// 实例化依赖的bean后便可以实例化beanDefinition本身了
 				// singleton模式的创建
 				if (mbd.isSingleton()) {
+					// 调用重载方法getSingleton(String beanName, ObjectFactory<?> singletonFactory)，ObjectFactory接口的作用在这里就显现了
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
-							// 核心所在
+							// 核心所在，实例化bean
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -365,7 +365,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					Object prototypeInstance = null;
 					try {
 						beforePrototypeCreation(beanName);
-						prototypeInstance = createBean(beanName, mbd, args);
+						prototypeInstance = createBean(beanName, mbd, args);  // 直接实例化bean
 					}
 					finally {
 						afterPrototypeCreation(beanName);
@@ -381,6 +381,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
 					}
 					try {
+						// ObjectFactory和scope配合
 						Object scopedInstance = scope.get(beanName, () -> {
 							beforePrototypeCreation(beanName);
 							try {
@@ -406,7 +407,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
-		// Check if required type matches the type of the actual bean instance.
 		// 检查需要的类型是否符合bean的实际类型
 		if (requiredType != null && !requiredType.isInstance(bean)) {
 			try {
@@ -1682,13 +1682,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// 到这可以确定beanInstance是FactoryBean，而且需要调用getObject方法
 		Object object = null;
 		if (mbd == null) {
-			// 尝试从缓存中加载bean，如果缓存中已经存在 beanName 对应的工厂 bean 生成的对象则直接返回
+			// 尝试从factoryBeanObjectCache<beanName, bean>缓存中获取bean，如果缓存中已经存在beanName对应的工厂bean生成的对象则直接返回
 			object = getCachedObjectForFactoryBean(beanName);
 		}
 		if (object == null) {
 			// 到这里已经明确知道beanInstance一定是FactoryBean类型
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
-			// containsBeanDefinition检测beanDefinitionMap中也就是在所有已经加载的类中检测是否定义beanName
+			// containsBeanDefinition检测beanDefinitionMap中也就是在所有已经加载的beanDefinition中检测是否有beanName的beanDefinition
 			if (mbd == null && containsBeanDefinition(beanName)) {
 				// 将存储XML配置文件的GenericBeanDefinition转换为RootBeanDefinition，如果指定BeanName是子Bean的话同时会合并父类的相关属性
 				mbd = getMergedLocalBeanDefinition(beanName);

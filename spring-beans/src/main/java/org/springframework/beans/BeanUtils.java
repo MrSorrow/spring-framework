@@ -155,7 +155,7 @@ public abstract class BeanUtils {
 	}
 
 	/**
-	 * Convenience method to instantiate a class using the given constructor.
+	 * 使用给定构造函数实例化类的便捷方法
 	 * <p>Note that this method tries to set the constructor accessible if given a
 	 * non-accessible (that is, non-public) constructor, and supports Kotlin classes
 	 * with optional parameters and default values.
@@ -171,7 +171,7 @@ public abstract class BeanUtils {
 		try {
 			ReflectionUtils.makeAccessible(ctor);
 			return (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.getDeclaringClass()) ?
-					KotlinDelegate.instantiateClass(ctor, args) : ctor.newInstance(args));
+					KotlinDelegate.instantiateClass(ctor, args) : ctor.newInstance(args));  // newInstance实例化
 		}
 		catch (InstantiationException ex) {
 			throw new BeanInstantiationException(ctor, "Is it an abstract class?", ex);

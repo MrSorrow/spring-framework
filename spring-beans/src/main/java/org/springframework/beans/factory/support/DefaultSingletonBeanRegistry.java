@@ -128,7 +128,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
-	 * 添加缓存并移除辅助变量
+	 * 添加一级缓存并清除二三级对应的缓存
 	 * Add the given singleton object to the singleton cache of this factory.
 	 * <p>To be called for eager registration of singletons.
 	 * @param beanName the name of the bean
@@ -136,7 +136,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	protected void addSingleton(String beanName, Object singletonObject) {
 		synchronized (this.singletonObjects) {
-			// 加入缓存
+			// 加入一级缓存，移除二三级缓存
 			this.singletonObjects.put(beanName, singletonObject);
 			this.singletonFactories.remove(beanName);
 			this.earlySingletonObjects.remove(beanName);
@@ -192,9 +192,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		// 检查一级缓存singletonObject中是否存在实例
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
-			// 如果一级缓存中不存在，则锁定全局变量并进行处理
+			// 如果一级缓存中不存在且当前beanName正在被创建，则锁定一级缓存尝试从二三级缓存中获取
 			synchronized (this.singletonObjects) {
-				// 从二级缓存中进行查找
+				// 从二级缓存中进行查找，二级缓存为普通HashMap，因为在同步代码块中不会发生并发问题
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
 					// 当某些方法需要提前初始化的时候则会调用addSingletonFactory方法将对应的ObjectFactory初始化策略存储在三级缓存singletonFactories
@@ -225,7 +225,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(beanName, "Bean name must not be null");
 		// 全局变量需要同步
 		synchronized (this.singletonObjects) {
-			// 首先检查对应的bean是否已经加载过，因为是单例模式的，如果有直接返回
+			// 首先检查对应的bean是否已经加载过，因为是单例模式的，如果有直接返回。一级缓存被锁住了，确保没有其他线程进行操作三级缓存，保证了单例bean创建的全局唯一
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				// 单例bean的初始化
@@ -251,7 +251,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
-					// 初始化bean
+					// 调用ObjectFactory的getObject()方法初始化bean
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
@@ -279,7 +279,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					// 创建完bean之后需要移除缓存中对该bean正在加载状态的记录
 					afterSingletonCreation(beanName);
 				}
-				// 加入缓存并删除加载bean过程中所记录的各种辅助状态
+				// 加入一级缓存并删除加载bean过程中所记录的各种辅助状态（也就是二级缓存和三级缓存）
 				if (newSingleton) {
 					addSingleton(beanName, singletonObject);
 				}
@@ -425,8 +425,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	}
 
 	/**
-	 * Register a dependent bean for the given bean,
-	 * to be destroyed before the given bean is destroyed.
+	 * 为给定的bean注册一个依赖bean，在销毁给定bean之前销毁它。
 	 * @param beanName the name of the bean
 	 * @param dependentBeanName the name of the dependent bean
 	 */
