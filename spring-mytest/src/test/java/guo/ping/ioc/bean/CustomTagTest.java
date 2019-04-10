@@ -18,8 +18,8 @@ public class CustomTagTest {
 
 	@Test
 	public void testCustomTag() {
-		XmlBeanFactory context = new XmlBeanFactory(new ClassPathResource("customTag-Test.xml"));
-//		ApplicationContext context = new ClassPathXmlApplicationContext("${config}");
+//		XmlBeanFactory context = new XmlBeanFactory(new ClassPathResource("customTag-Test.xml"));
+		ApplicationContext context = new ClassPathXmlApplicationContext("${config}");
 		User user = (User) context.getBean("testUserBean");
 		Order order = (Order) context.getBean("testOrderBean");
 		System.out.println(user);

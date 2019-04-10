@@ -142,7 +142,7 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 	}
 
 	/**
-	 * 对属性进行验证
+	 * 对requiredProperties属性进行验证
 	 */
 	@Override
 	public void validateRequiredProperties() {

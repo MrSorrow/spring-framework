@@ -522,7 +522,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 初始化BeanFactory，并进行XML文件读取
+			// 初始化BeanFactory，并进行XML文件读取配置，此时已经转化为beanDefinition
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -543,7 +543,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-				// 为上下文初始化Message消息资源，即不同语言的消息体，国际化处理
+				// 为Context初始化Message消息资源，即不同语言的消息体，国际化处理
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
@@ -597,7 +597,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * active flag as well as performing any initialization of property sources.
 	 */
 	protected void prepareRefresh() {
-		this.startupDate = System.currentTimeMillis();
+		this.startupDate = System.currentTimeMillis();  // 容器刷新计时
 		this.closed.set(false); // AtomicBoolean类型，并发
 		this.active.set(true); // AtomicBoolean类型，并发
 
@@ -661,7 +661,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// 添加BeanPostProcessor，对这些Aware接口信息进行信息注入
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 
-		// 设置几个忽略自动装配的接口
+		// 上一步实现Aware接口的bean由于其特殊性，所以在自动装配时需要忽略来手动注入  https://www.jianshu.com/p/3c7e0608ff1f
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -678,7 +678,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
 		// Register early post-processor for detecting inner beans as ApplicationListeners.
-		// 添加BeanPostProcessor实现：ApplicationListenerDetector，它是用来将实现了ApplicationListener接口的Bean添加到容器的监听器列表
+		// 添加BeanPostProcessor实现：ApplicationListenerDetector，它是用来将 实现了ApplicationListener接口的Bean 添加到容器的监听器列表
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found.
@@ -720,7 +720,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
-		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
+		// 如果beanFactory中定义了loadTimeWeaver的bean，则检测LoadTimeWeaver并准备织入
 		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
 		if (beanFactory.getTempClassLoader() == null && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
@@ -747,7 +747,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		// 如果配置文件中定义了messageSource这个bean，那么将其提取并记录在ApplicationContext(this.messageSource)中
 		if (beanFactory.containsLocalBean(MESSAGE_SOURCE_BEAN_NAME)) {
-			// 获取名为messageSource这个bean
+			// 实例化名为messageSource这个bean
 			this.messageSource = beanFactory.getBean(MESSAGE_SOURCE_BEAN_NAME, MessageSource.class);
 			// Make MessageSource aware of parent MessageSource.
 			if (this.parent != null && this.messageSource instanceof HierarchicalMessageSource) {
@@ -1293,8 +1293,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
-	 * Return the internal bean factory of the parent context if it implements
-	 * ConfigurableApplicationContext; else, return the parent context itself.
+	 * 如果父Context实现了ConfigurableApplicationContext，则返回父Context的内部beanFactory;
+	 * 否则，直接返回父Context本身
 	 * @see org.springframework.context.ConfigurableApplicationContext#getBeanFactory
 	 */
 	@Nullable
