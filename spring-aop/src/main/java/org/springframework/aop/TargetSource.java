@@ -36,6 +36,7 @@ import org.springframework.lang.Nullable;
 public interface TargetSource extends TargetClassAware {
 
 	/**
+	 * 本方法主要用于返回目标bean的Class类型
 	 * Return the type of targets returned by this {@link TargetSource}.
 	 * <p>Can return {@code null}, although certain usages of a {@code TargetSource}
 	 * might just work with a predetermined target class.
@@ -46,6 +47,9 @@ public interface TargetSource extends TargetClassAware {
 	Class<?> getTargetClass();
 
 	/**
+	 * 这个方法用户返回当前bean是否为静态的，比如常见的单例bean就是静态的，而prototype就是动态的，
+	 * 这里这个方法的主要作用是，对于静态的bean，spring是会对其进行缓存的，在多次使用TargetSource
+	 * 获取目标bean对象的时候，其获取的总是同一个对象，通过这种方式提高效率
 	 * Will all calls to {@link #getTarget()} return the same object?
 	 * <p>In that case, there will be no need to invoke {@link #releaseTarget(Object)},
 	 * and the AOP framework can cache the return value of {@link #getTarget()}.
@@ -55,6 +59,7 @@ public interface TargetSource extends TargetClassAware {
 	boolean isStatic();
 
 	/**
+	 * 获取目标bean对象，这里可以根据业务需要进行自行定制
 	 * Return a target instance. Invoked immediately before the
 	 * AOP framework calls the "target" of an AOP method invocation.
 	 * @return the target object which contains the joinpoint,
@@ -65,6 +70,8 @@ public interface TargetSource extends TargetClassAware {
 	Object getTarget() throws Exception;
 
 	/**
+	 * Spring在用完目标bean之后会调用这个方法释放目标bean对象，对于一些需要池化的对象，
+	 * 这个方法是必须要实现的，这个方法默认不进行任何处理。
 	 * Release the given target object obtained from the
 	 * {@link #getTarget()} method, if any.
 	 * @param target object obtained from a call to {@link #getTarget()}

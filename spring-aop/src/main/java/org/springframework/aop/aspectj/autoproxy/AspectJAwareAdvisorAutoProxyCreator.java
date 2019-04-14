@@ -86,7 +86,7 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	}
 
 	/**
-	 * 在advice链的开始添加ExposeInvocationInterceptor
+	 * 在增强器链的开始添加ExposeInvocationInterceptor
 	 * Adds an {@link ExposeInvocationInterceptor} to the beginning of the advice chain.
 	 * These additional advices are needed when using AspectJ expression pointcuts
 	 * and when using AspectJ-style advice.
@@ -99,13 +99,16 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	@Override
 	protected boolean shouldSkip(Class<?> beanClass, String beanName) {
 		// TODO: Consider optimization by caching the list of the aspect names
+		// 获取所有候选的增强器
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		// 遍历所有的候选增强器中对应的beanName是否包含该beanName，包含则直接跳过
 		for (Advisor advisor : candidateAdvisors) {
 			if (advisor instanceof AspectJPointcutAdvisor &&
 					((AspectJPointcutAdvisor) advisor).getAspectName().equals(beanName)) {
 				return true;
 			}
 		}
+		// 否则调用父类的方法进行判断
 		return super.shouldSkip(beanClass, beanName);
 	}
 

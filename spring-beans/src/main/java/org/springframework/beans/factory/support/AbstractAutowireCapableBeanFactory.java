@@ -1107,7 +1107,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					// 在bean的实例化前会调用后处理器的方法进行处理
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
-						// 实例化后的后处理器应用
+						// 实例化后的后处理器应用，调用的初始化后处理方法
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
@@ -1118,8 +1118,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * Apply InstantiationAwareBeanPostProcessors to the specified bean definition
-	 * (by class and name), invoking their {@code postProcessBeforeInstantiation} methods.
+	 * 对特定的bean在实例化之前调用InstantiationAwareBeanPostProcessors后处理器的{@code postProcessBeforeInstantiation}方法
 	 * <p>Any returned object will be used as the bean instead of actually instantiating
 	 * the target bean. A {@code null} return value from the post-processor will
 	 * result in the target bean being instantiated.

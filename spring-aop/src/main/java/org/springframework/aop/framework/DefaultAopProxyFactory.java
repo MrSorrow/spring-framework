@@ -48,7 +48,7 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 
 	/**
 	 * 创建动态代理的真正地方：JDK和CGlib
-	 * @param config the AOP configuration in the form of an
+	 * @param config the AOP configuration in the form of an 往往是代理工厂ProxyFactory
 	 * AdvisedSupport object
 	 * @return
 	 * @throws AopConfigException

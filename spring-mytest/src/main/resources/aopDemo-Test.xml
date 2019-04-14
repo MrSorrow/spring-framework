@@ -5,9 +5,10 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans    http://www.springframework.org/schema/beans/spring-beans.xsd
 						   http://www.springframework.org/schema/aop    http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-	<aop:aspectj-autoproxy expose-proxy="true"/>
 
 	<bean id="test" class="guo.ping.aop.usedemo.TestBean" />
 	<bean class="guo.ping.aop.usedemo.AspectJTest" />
+	<aop:aspectj-autoproxy expose-proxy="true">
+	</aop:aspectj-autoproxy>
 
 </beans>

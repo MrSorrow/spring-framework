@@ -307,7 +307,7 @@ public abstract class AopUtils {
 	}
 
 	/**
-	 * 主要功能是寻找所有增强器中适用于当前class的增强器
+	 * 主要功能是过滤出所有增强器中适用于当前目标beanClass的增强器
 	 * Determine the sublist of the {@code candidateAdvisors} list
 	 * that is applicable to the given class.
 	 * @param candidateAdvisors the Advisors to evaluate
@@ -322,14 +322,14 @@ public abstract class AopUtils {
 		// 保存筛选的合适增强器
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
 
-		// 首先处理引介增强
+		// 首先处理引介增强 (引介增强的功能主要是对目标类的增强，可以添加一些属性和行为)
 		for (Advisor candidate : candidateAdvisors) {
 			// 核心匹配实现：canApply()
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
 		}
-		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+		boolean hasIntroductions = !eligibleAdvisors.isEmpty();  // 是否含有引介增强器
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
 				// 引介增强已经处理

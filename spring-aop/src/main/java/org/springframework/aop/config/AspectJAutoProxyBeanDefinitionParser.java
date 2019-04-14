@@ -64,7 +64,7 @@ class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {
 	}
 
 	private void addIncludePatterns(Element element, ParserContext parserContext, BeanDefinition beanDef) {
-		// 用于保存解析的属性
+		// 用于保存解析的属性，ManagedList继承自ArrayList
 		ManagedList<TypedStringValue> includePatterns = new ManagedList<>();
 		NodeList childNodes = element.getChildNodes();
 		// 遍历子节点
@@ -72,11 +72,13 @@ class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {
 			Node node = childNodes.item(i);
 			if (node instanceof Element) {
 				Element includeElement = (Element) node;
+				// 解析<aop:include name="xxx" />的name属性
 				TypedStringValue valueHolder = new TypedStringValue(includeElement.getAttribute("name"));
 				valueHolder.setSource(parserContext.extractSource(includeElement));
 				includePatterns.add(valueHolder);
 			}
 		}
+		// 将ManagedList列表添加至org.springframework.aop.config.internalAutoProxyCreator的beanDefinition的PropertyValues中
 		if (!includePatterns.isEmpty()) {
 			includePatterns.setSource(parserContext.extractSource(element));
 			beanDef.getPropertyValues().add("includePatterns", includePatterns);

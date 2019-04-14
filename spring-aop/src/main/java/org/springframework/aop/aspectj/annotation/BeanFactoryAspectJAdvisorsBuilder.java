@@ -74,7 +74,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 
 	/**
-	 * 获取bean的注解增强
+	 * 获取所有@AspectJ注解方式定义的切面类中所有的注解增强器Advisor
 	 * Look for AspectJ-annotated aspect beans in the current bean factory,
 	 * and return to a list of Spring AOP Advisors representing them.
 	 * <p>Creates a Spring Advisor for each AspectJ advice method.
@@ -82,20 +82,20 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> buildAspectJAdvisors() {
-		// 记录保存了被增强的beanName
+		// aspectBeanNames缓存了所有利用@AspectJ注解的类对应的beanName
 		List<String> aspectNames = this.aspectBeanNames;
 
 		if (aspectNames == null) {
 			synchronized (this) {
-				aspectNames = this.aspectBeanNames;
+				aspectNames = this.aspectBeanNames; // 双重判断
 				if (aspectNames == null) {
-					List<Advisor> advisors = new ArrayList<>();
-					aspectNames = new ArrayList<>();
+					List<Advisor> advisors = new ArrayList<>();  // 用于保存所有的增强器Advisor并返回
+					aspectNames = new ArrayList<>();  // 保存所有利用@AspectJ注解的类对应的beanName，待会添加至缓存
 					// 获取的是所有的beanName，因为类型是Object
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
 
-					// 循环遍历所有的beanName，过滤带有@AspectJ注解的类，找出对应的增强方法
+					// 循环遍历所有的beanName，过滤带有@AspectJ注解的类，找出对应的通知方法封装为增强器
 					for (String beanName : beanNames) {
 						// 不合法的bean则略过，由子类定义合法规则，默认返回true
 						if (!isEligibleBean(beanName)) {
@@ -108,18 +108,18 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						if (beanType == null) {
 							continue;
 						}
-						// 如果bean的class类存在@AspectJ注解
+						// 如果bean的class类存在@AspectJ注解（用Class.getDeclaredAnnotation(xxx)方法进行检测）
 						if (this.advisorFactory.isAspect(beanType)) {
 							// 只要被注解的就记录下来，下次就可以直接使用
 							aspectNames.add(beanName);
-							// 利用AspectMetadata包装了关于该类（用@AspectJ标注的）的一些信息，包括类型，名称，AjType
+							// 利用AspectMetadata包装了关于该切面类（用@AspectJ标注的）的一些信息，包括类型，名称，AjType
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
 								// 创建了一个工厂，包含了beanFactory和AspectMetadata信息
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
 
-								// 解析标记了@AspectJ注解的类中定义的增强器
+								// 解析标记了@AspectJ注解的类中定义的通知方法并封装成Advisor增强器并返回
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								// 解析结果记录在缓存中
 								if (this.beanFactory.isSingleton(beanName)) {

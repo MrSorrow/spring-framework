@@ -216,7 +216,7 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 	}
 
 	/**
-	 * Build the underlying AspectJ pointcut expression.
+	 * 构建底层的AspectJ切入点表达式 Build the underlying AspectJ pointcut expression.
 	 */
 	private PointcutExpression buildPointcutExpression(@Nullable ClassLoader classLoader) {
 		PointcutParser parser = initializePointcutParser(classLoader);
@@ -229,6 +229,10 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 				this.pointcutDeclarationScope, pointcutParameters);
 	}
 
+	/**
+	 * 获取切点表达式
+	 * @return
+	 */
 	private String resolveExpression() {
 		String expression = getExpression();
 		Assert.state(expression != null, "No expression set");

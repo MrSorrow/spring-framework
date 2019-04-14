@@ -47,7 +47,7 @@ import org.springframework.util.Assert;
 public abstract class AopConfigUtils {
 
 	/**
-	 * The bean name of the internally managed auto-proxy creator.
+	 * （内部管理的）自动代理创建者的bean名称。The bean name of the internally managed auto-proxy creator.
 	 */
 	public static final String AUTO_PROXY_CREATOR_BEAN_NAME =
 			"org.springframework.aop.config.internalAutoProxyCreator";
@@ -58,7 +58,7 @@ public abstract class AopConfigUtils {
 	private static final List<Class<?>> APC_PRIORITY_LIST = new ArrayList<>();
 
 	/**
-	 * Setup the escalation list.
+	 * 初始化升级列表，也就是优先权列表，index越大，优先权越高
 	 */
 	static {
 		APC_PRIORITY_LIST.add(InfrastructureAdvisorAutoProxyCreator.class);
@@ -117,7 +117,7 @@ public abstract class AopConfigUtils {
 	}
 
 	/**
-	 * 设置proxy-target-class为true
+	 * 设置proxy-target-class为true调用此方法，强制使用cglib进行动态代理
 	 * @param registry
 	 */
 	public static void forceAutoProxyCreatorToUseClassProxying(BeanDefinitionRegistry registry) {
@@ -128,7 +128,7 @@ public abstract class AopConfigUtils {
 	}
 
 	/**
-	 * 设置expose-proxy为true
+	 * 设置expose-proxy为true，暴露动态代理对象进入ThreadLocal，便于增强方法中调用增强方法
 	 * @param registry
 	 */
 	public static void forceAutoProxyCreatorToExposeProxy(BeanDefinitionRegistry registry) {
@@ -138,37 +138,48 @@ public abstract class AopConfigUtils {
 		}
 	}
 
+	/**
+	 * 注册或者升级name为org.springframework.aop.config.internalAutoProxyCreator，类型为AnnotationAwareAspectJAutoProxyCreator的bean
+	 * 升级主要是指如果已经存在name是上面的bean但类型不一样，则比较类型的优先级，优先级比AnnotationAwareAspectJAutoProxyCreator低，
+	 * 则要更改beanDefinition对应的class属性为AnnotationAwareAspectJAutoProxyCreator，优先级不低则保持原样。
+	 * @param cls
+	 * @param registry
+	 * @param source
+	 * @return
+	 */
 	@Nullable
 	private static BeanDefinition registerOrEscalateApcAsRequired(Class<?> cls, BeanDefinitionRegistry registry,
 			@Nullable Object source) {
-
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
-		// 如果已经存在了自动代理创建器且存在的自动代理创建器与现在的不一致那么需要根据优先级来判断到底需要使用哪个
+		// 如果beanDefinitionMap已经存在了name为org.springframework.aop.config.internalAutoProxyCreator的自动代理创建器
+		// 且存在的自动代理创建器与现在的不一致那么需要根据优先级来判断到底需要使用哪个 TODO: 优先级是啥？
 		if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
-			// 是否存在org.springframework.aop.config.internalAutoProxyCreator名称的BeanDefinition
+			// 存在就获取name为org.springframework.aop.config.internalAutoProxyCreator的beanDefinition
 			BeanDefinition apcDefinition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
+			// 先进行类型验证，检验beanDefinition类型是不是AnnotationAwareAspectJAutoProxyCreator
 			if (!cls.getName().equals(apcDefinition.getBeanClassName())) {
-				// 如果已经存在的beanDefinition类型不是AnnotationAwareAspectJAutoProxyCreator
+				// 不是才去比较两种类型的优先级，进而判断是否升级——也就是替换class属性
 				int currentPriority = findPriorityForClass(apcDefinition.getBeanClassName());
 				int requiredPriority = findPriorityForClass(cls);
-				// 如果AnnotationAwareAspectJAutoProxyCreator的优先级比原来的高，要进行更改
+				// 如果AnnotationAwareAspectJAutoProxyCreator的优先级比原来的高，要进行更改。
+				// （其实AnnotationAwareAspectJAutoProxyCreator已经是最高，但是cls并不一定是AnnotationAwareAspectJAutoProxyCreator，只是这里AOP分析的是）
 				if (currentPriority < requiredPriority) {
 					// 改变bean最重要的就是改变bean所对应的className属性
 					apcDefinition.setBeanClassName(cls.getName());
 				}
 			}
-			// 如果已经存在自动代理创建器并且与将要创建的一致，那么无需再次创建
+			// 如果已经存在自动代理创建器的beanDefinition，并且类型也一致，那么无需再次创建
 			return null;
 		}
 
 		// 如果不存在org.springframework.aop.config.internalAutoProxyCreator名称的BeanDefinition，则创建并注册
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
-		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
+		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);  // Order越小，优先级越高
 		// 标注该类的角色为基础设施
 		beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-		// 注册
+		// 在容器中注册beanDefinition
 		registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
 		return beanDefinition;
 	}
