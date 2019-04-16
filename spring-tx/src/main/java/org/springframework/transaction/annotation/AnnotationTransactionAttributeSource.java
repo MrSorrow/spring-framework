@@ -152,7 +152,7 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	}
 
 	/**
-	 * Determine the transaction attribute for the given method or class.
+	 * 确定给定方法或类的事务属性。
 	 * <p>This implementation delegates to configured
 	 * {@link TransactionAnnotationParser TransactionAnnotationParsers}
 	 * for parsing known annotations into Spring's metadata attribute class.

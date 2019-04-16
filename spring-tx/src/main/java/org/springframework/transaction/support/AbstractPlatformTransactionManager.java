@@ -381,8 +381,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
 			}
 			try {
-				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				// 5. 构造DefaultTransactionStatus实例
+				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 				// 6. 完善transaction，包括设置ConnectionHolder、隔离级别、timeout。如果是新连接，绑定到当前线程

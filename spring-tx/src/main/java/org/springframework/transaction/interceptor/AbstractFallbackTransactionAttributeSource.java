@@ -74,8 +74,8 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 
 
 	/**
-	 * Determine the transaction attribute for this method invocation.
-	 * <p>Defaults to the class's transaction attribute if no method attribute is found.
+	 * 确定此方法调用的事务属性
+	 * 如果未找到方法属性，则默认为类上配置的事务属性。
 	 * @param method the method for the current invocation (never {@code null})
 	 * @param targetClass the target class for this invocation (may be {@code null})
 	 * @return a TransactionAttribute for this method, or {@code null} if the method
@@ -111,6 +111,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 				this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
 			}
 			else {
+				// 生成方法的符号引用(类名+"."+方法名)
 				String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
 				if (txAttr instanceof DefaultTransactionAttribute) {
 					((DefaultTransactionAttribute) txAttr).setDescriptor(methodIdentification);
@@ -138,7 +139,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 	}
 
 	/**
-	 * 事务标签的解析提取
+	 * 对方法上标注的事务注解中的信息进行提取
 	 * Same signature as {@link #getTransactionAttribute}, but doesn't cache the result.
 	 * {@link #getTransactionAttribute} is effectively a caching decorator for this method.
 	 * <p>As of 4.1.8, this method can be overridden.
@@ -154,16 +155,16 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 
 		// The method may be on an interface, but we need attributes from the target class.
 		// If the target class is null, the method will be unchanged.
-		// method代表接口中的方法，specificMethod代表实现类中的方法
+		// method可能代表的是接口中的方法，specificMethod代表实现类中的方法
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 
-		// 首先查看方法是否存在事务声明
+		// 首先查看实现类中的方法上是否存在事务声明
 		TransactionAttribute txAttr = findTransactionAttribute(specificMethod);
 		if (txAttr != null) {
 			return txAttr;
 		}
 
-		// 其次查看方法所在类是否存在事务声明
+		// 其次查看实现类中的方法所在类，也就是实现类上是否存在事务声明
 		txAttr = findTransactionAttribute(specificMethod.getDeclaringClass());
 		if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
 			return txAttr;

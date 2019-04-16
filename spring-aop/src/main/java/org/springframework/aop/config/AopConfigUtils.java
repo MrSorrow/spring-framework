@@ -61,9 +61,9 @@ public abstract class AopConfigUtils {
 	 * 初始化升级列表，也就是优先权列表，index越大，优先权越高
 	 */
 	static {
-		APC_PRIORITY_LIST.add(InfrastructureAdvisorAutoProxyCreator.class);
+		APC_PRIORITY_LIST.add(InfrastructureAdvisorAutoProxyCreator.class);  // 事务自定义标签所用
 		APC_PRIORITY_LIST.add(AspectJAwareAdvisorAutoProxyCreator.class);
-		APC_PRIORITY_LIST.add(AnnotationAwareAspectJAutoProxyCreator.class);
+		APC_PRIORITY_LIST.add(AnnotationAwareAspectJAutoProxyCreator.class);  // AOP自定义标签所用
 	}
 
 
@@ -153,7 +153,7 @@ public abstract class AopConfigUtils {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
 		// 如果beanDefinitionMap已经存在了name为org.springframework.aop.config.internalAutoProxyCreator的自动代理创建器
-		// 且存在的自动代理创建器与现在的不一致那么需要根据优先级来判断到底需要使用哪个 TODO: 优先级是啥？
+		// 且存在的自动代理创建器与现在的不一致那么需要根据优先级来判断到底需要使用哪个
 		if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
 			// 存在就获取name为org.springframework.aop.config.internalAutoProxyCreator的beanDefinition
 			BeanDefinition apcDefinition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);

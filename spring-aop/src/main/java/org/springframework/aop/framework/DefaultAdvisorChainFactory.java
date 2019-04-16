@@ -80,7 +80,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 						match = mm.matches(method, actualClass);
 					}
 					if (match) {
-						// 将 advisor 中的 advice 转成相应的拦截器
+						// [AOP]将 advisor 中的 advice 转成相应的拦截器 [事务]将BeanFactoryTransactionAttributeSourceAdvisor中的TransactionInterceptor包装成拦截器
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 						// 若 isRuntime 返回 true，则表明 MethodMatcher 要在运行时做一些检测
 						if (mm.isRuntime()) {

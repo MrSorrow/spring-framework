@@ -121,7 +121,7 @@ class AnnotationDrivenBeanDefinitionParser implements BeanDefinitionParser {
 	private static class AopAutoProxyConfigurer {
 
 		public static void configureAutoProxyCreator(Element element, ParserContext parserContext) {
-			// 注册代理类（InfrastructureAdvisorAutoProxyCreator类型的bean）
+			// 注册自动代理创建器（InfrastructureAdvisorAutoProxyCreator类型的bean，和AOP分析中的AnnotationAwareAspectJAutoProxyCreator类似）
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(parserContext, element);
 
 			// TRANSACTION_ADVISOR_BEAN_NAME=org.springframework.transaction.config.internalTransactionAdvisor
