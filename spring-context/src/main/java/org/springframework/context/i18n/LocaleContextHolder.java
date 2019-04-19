@@ -113,7 +113,7 @@ public final class LocaleContextHolder {
 	}
 
 	/**
-	 * Return the LocaleContext associated with the current thread, if any.
+	 * 返回与当前线程关联的LocaleContext（如果有）
 	 * @return the current LocaleContext, or {@code null} if none
 	 */
 	@Nullable

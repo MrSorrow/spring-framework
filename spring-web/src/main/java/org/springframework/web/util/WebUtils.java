@@ -489,8 +489,8 @@ public abstract class WebUtils {
 	}
 
 	/**
-	 * Determine whether the given request is an include request,
-	 * that is, not a top-level HTTP request coming in from the outside.
+	 * 确定给定请求是否为inclue请求，即不是从外部进入的顶级HTTP请求。
+	 * Determine whether the given request is an include request, that is, not a top-level HTTP request coming in from the outside.
 	 * <p>Checks the presence of the "javax.servlet.include.request_uri"
 	 * request attribute. Could check any request attribute that is only
 	 * present in an include request.

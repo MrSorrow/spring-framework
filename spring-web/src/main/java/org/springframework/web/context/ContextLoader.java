@@ -277,7 +277,7 @@ public class ContextLoader {
 		long startTime = System.currentTimeMillis();
 
 		try {
-			// Store context in local instance variable, to guarantee that it is available on ServletContext shutdown.
+			// 将context存储在本地实例变量中，以保证它在ServletContext关闭时可用。
 			if (this.context == null) {
 				// 创建Spring的WebApplicationContext
 				this.context = createWebApplicationContext(servletContext);
@@ -289,7 +289,7 @@ public class ContextLoader {
 					// setting the parent context, setting the application context id, etc
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> determine parent for root web application context, if any.
-						// 看看是否有父容器，有的话设置给当前创建的容器，DispatcherServlet没有重写方法，直接返回null
+						// 看看是否有父容器，有的话设置给当前创建的容器，ContextLoaderListener没有重写方法，直接返回null
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
@@ -297,7 +297,7 @@ public class ContextLoader {
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
-			// 记录在servletContext中
+			// 将根容器保存在servletContext中，第一步检查存在性就是根据这一点查看的
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
@@ -305,7 +305,7 @@ public class ContextLoader {
 				currentContext = this.context;
 			}
 			else if (ccl != null) {
-				// 映射当前的类加载器与创建的实例到全局变量currentContextPerThread中
+				// 将当前的类加载器(ParallelWebappClassLoader)与容器添加到全局变量currentContextPerThread<ClassLoader, WebApplicationContext>
 				currentContextPerThread.put(ccl, this.context);
 			}
 

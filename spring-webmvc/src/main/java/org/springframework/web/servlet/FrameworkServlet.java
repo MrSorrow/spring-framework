@@ -597,7 +597,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			wac = findWebApplicationContext();
 		}
 		if (wac == null) {
-			// 仍然没有的化DispatcherServlet就自己创建一个子容器
+			// 仍然没有的话，DispatcherServlet就自己创建一个子容器
 			wac = createWebApplicationContext(rootContext);
 		}
 
@@ -605,7 +605,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
-			// 3. 刷新Spring在Web功能实现中所必须使用的全局变量
+			// 3. 刷新Spring在Web功能实现中所必须使用的全局变量。这一步很可能在ContextRefreshedEvent事件发生后ContextRefreshListener监听器触发调用的
 			onRefresh(wac);
 		}
 
@@ -689,7 +689,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
-		// 配置Spring容器包括加载配置文件等
+		// 对已经创建的WebApplicationContext实例进行配置及刷新
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -707,7 +707,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				wac.setId(this.contextId);
 			}
 			else {
-				// Generate default id...   e.g. org.springframework.web.context.WebApplicationContext:/mvc-test
+				// Generate default id...   e.g. org.springframework.web.context.WebApplicationContext:/mvc-test/mvc-test
 				wac.setId(ConfigurableWebApplicationContext.APPLICATION_CONTEXT_ID_PREFIX +
 						ObjectUtils.getDisplayString(getServletContext().getContextPath()) + '/' + getServletName());
 			}
@@ -718,7 +718,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		wac.setServletConfig(getServletConfig());
 		// 设置命名空间：servlet名称+"-servlet"
 		wac.setNamespace(getNamespace());
-		// 添加监听器
+		// 添加ContextRefreshListener监听器
 		wac.addApplicationListener(new SourceFilteringListener(wac, new ContextRefreshListener()));
 
 		// The wac environment's #initPropertySources will be called in any case when the context
@@ -752,8 +752,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	}
 
 	/**
-	 * Post-process the given WebApplicationContext before it is refreshed
-	 * and activated as context for this servlet.
+	 * 在给定的WebApplicationContext被刷新并作为此servlet的上下文激活之前对其进行后处理。
 	 * <p>The default implementation is empty. {@code refresh()} will
 	 * be called automatically after this method returns.
 	 * <p>Note that this method is designed to allow subclasses to modify the application
@@ -1033,7 +1032,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		// 获取ThreadLocal中之前保存的LocaleContext
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
-		// 建立新的LocaleContext
+		// 建立新的LocaleContext实例，LocaleContext接口的getLocale()方法能够利用LocaleResolver进行解析request返回Locale
 		LocaleContext localeContext = buildLocaleContext(request);
 
 		// 获取ThreadLocal中之前保存的RequestAttributes

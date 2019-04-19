@@ -510,7 +510,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		initHandlerMappings(context);
 		// (5)初始化HandlerAdapters，用于处理器适配器
 		initHandlerAdapters(context);
-		// (6)初始化HandlerExceptionResolvers
+		// (6)初始化HandlerExceptionResolvers，处理器异常解析器接口，将处理器( handler )执行时发生的异常，解析( 转换 )成对应的 ModelAndView 结果
 		initHandlerExceptionResolvers(context);
 		// (7)初始化RequestToViewNameTranslator，用于处理视图名称
 		initRequestToViewNameTranslator(context);
@@ -1074,14 +1074,14 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
-				// 利用处理器适配器调用handler方法进行逻辑处理并返回视图
+				// 利用处理器适配器handle方法调用handler进行逻辑处理并返回视图
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
 					return;
 				}
 
-				// 视图名称转换应用于需要添加前缀后缀的情况
+				// 视图名称转换，如果没有则通过视图解析器添加默认的视图
 				applyDefaultViewName(processedRequest, mv);
 				// 应用所有拦截器的postHandle方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
@@ -1183,7 +1183,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
-	 * Build a LocaleContext for the given request, exposing the request's primary locale as current locale.
+	 * 为给定请求构建LocaleContext，将请求的primary locale设为当前locale.
 	 * <p>The default implementation uses the dispatcher's LocaleResolver to obtain the current locale,
 	 * which might change during a request.
 	 * @param request current HTTP request
@@ -1394,7 +1394,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * @throws Exception if there's a problem rendering the view
 	 */
 	protected void render(ModelAndView mv, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		// Determine locale for request and apply it to the response.
+		// 确定请求的locale设置并将其应用于响应
 		Locale locale =
 				(this.localeResolver != null ? this.localeResolver.resolveLocale(request) : request.getLocale());
 		response.setLocale(locale);

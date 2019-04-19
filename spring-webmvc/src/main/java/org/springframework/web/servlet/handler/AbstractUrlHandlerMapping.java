@@ -122,7 +122,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
 		// 截取用于匹配的url有效路径
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
-		// 根据路径寻找Handler
+		// 根据url路径寻找匹配的Handler，此时handler已经是处理器执行链HandlerExecutionChain类型
 		Object handler = lookupHandler(lookupPath, request);
 		// 如果根据路径没有匹配到
 		if (handler == null) {
@@ -213,7 +213,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 							"Could not find handler for best pattern match [" + bestMatch + "]");
 				}
 			}
-			// Bean name or resolved handler?
+			// handler如果是String类型 要从bean容器中获取实例
 			if (handler instanceof String) {
 				String handlerName = (String) handler;
 				handler = obtainApplicationContext().getBean(handlerName);
