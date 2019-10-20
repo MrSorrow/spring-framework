@@ -40,6 +40,7 @@ import org.springframework.web.reactive.socket.WebSocketSession;
  * @author Rossen Stoyanchev
  * @since 5.0
  */
+@SuppressWarnings("deprecation")
 public class ReactorNettyWebSocketSession
 		extends NettyWebSocketSessionSupport<ReactorNettyWebSocketSession.WebSocketConnection> {
 
